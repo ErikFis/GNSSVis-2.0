@@ -41,7 +41,7 @@ caches/
 *.download
 /notebooks/*.txt
 
-# Generated simulation outputs and large local artifacts
+# Generated simulation outputs and local artifacts
 outputs/
 results/
 artifacts/
@@ -109,3 +109,7 @@ draft/*.snm
 draft/*.vrb
 draft/figures/*.pdf
 draft/figures/*.png
+
+# Keep intentional test fixtures available to reviewers
+!/tests/fixtures/
+!/tests/fixtures/**

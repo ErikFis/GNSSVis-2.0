@@ -12,5 +12,4 @@ observation. Observation data is deliberately excluded. Initialization and
 trajectory analysis may download ephemerides and TLEs.
 
 Before committing notebook edits, clear outputs and execution counts. Keep
-plots and numerical output outside the source submission. Check the task
-budget with `python tools/check_task_size.py`.
+plots and numerical output outside the source submission. Keep only the notebook source needed to review the task.

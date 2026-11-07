@@ -28,36 +28,21 @@ The upstream URL is recorded here rather than configured as a push remote.
 
 ```bash
 git switch -c task/simulation-work
-git config core.hooksPath .githooks
-python tools/check_task_size.py
 ```
 
-Git hooks are configured in the distributed local repository. If copying only
-source files or cloning elsewhere, run the configuration command again.
-Git does not propagate local hook configuration through a clone.
+## Files for task review
 
-Commit the preparation before starting task-specific work if you reconstruct
-the repository manually. The provided repositories already have their initial
-commits and `task-base` tags. Do not move the baseline tag during the task.
+Keep source code, relevant examples, documentation, packaging metadata, and
+intentional test fixtures. Ignore local environments, bytecode, installation
+metadata, downloaded catalogs, ephemerides, observation datasets, generated
+simulation outputs, logs, temporary files, editor state, and build artifacts.
 
-## Size policy
+The ignore rules are based on file purpose. There is no file-size restriction,
+size-check script, or commit hook. Small fixtures under `tests/fixtures/` remain
+eligible for version control so reviewers can reproduce task behavior.
 
-The tool checks the entire delta from `task-base`, including changes in earlier
-task commits. It sums the Git binary patch, changed file contents, and
-non-ignored untracked file sizes, and rejects totals at or above 10,000,000
-bytes. The pre-commit hook checks the staged version of that same aggregate
-delta. Run the default command before preparing a submission to include
-unstaged and untracked work too.
-
-This is a conservative local check. Alignerr may measure a different artifact;
-verify the actual submission format and its final size. A `.gitignore` cannot
-enforce a size limit, remove files already tracked, or prevent `git add -f`.
-The size hook still checks large files added by force. Hooks can be bypassed,
-so always run the check explicitly before submission.
-
-Ignore rules keep regenerable artifacts local. Do not submit the virtual
-environment, downloaded data, caches, notebook outputs, or original upstream
-Git history. Keep the two repositories as siblings, not as nested repositories.
+The provided repositories have local Git histories and `task-base` tags.
+Keep the repositories as siblings rather than nesting one inside the other.
 
 ## Dependencies and downloads
 

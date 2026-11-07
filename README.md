@@ -71,7 +71,7 @@ Latitude and longitude are degrees; altitude is meters above sea level.
 - [Public API](docs/SIMPLE_API.md)
 - [Examples](examples/README.md)
 - [Notebooks](notebooks/README.md)
-- [Task preparation and size checks](TASK_PREPARATION.md)
+- [Task preparation](TASK_PREPARATION.md)
 
 ## Contributing
 
