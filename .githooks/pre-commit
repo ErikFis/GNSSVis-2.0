@@ -1,0 +1,6 @@
+#!/bin/sh
+# Check the complete staged task delta, including earlier task commits.
+if command -v python3 >/dev/null 2>&1; then
+    exec python3 tools/check_task_size.py --staged
+fi
+exec python tools/check_task_size.py --staged

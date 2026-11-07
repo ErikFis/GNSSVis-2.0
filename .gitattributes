@@ -1,0 +1,11 @@
+# Linguist configuration for GitHub language statistics
+# Mark Jupyter notebooks as documentation, not code
+*.ipynb linguist-documentation
+
+# Ensure Python is recognized as the primary language
+*.py linguist-language=Python
+
+# Mark data files appropriately
+*.txt linguist-generated=true
+*.bsp linguist-generated=true
+*.json linguist-generated=true
