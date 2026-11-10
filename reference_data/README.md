@@ -41,8 +41,8 @@ CSV. These are nominal carrier centers, not measured mean frequencies.
 
 The chosen satellites belong to GPS IIF/III blocks. The scenario assumes their
 nominal L1/L2/L5 carrier capability; it makes no assertion about health or actual
-transmission at the observation time. It does not model occupied bandwidth,
-Doppler, power, polarization, or interference received by an actual telescope.
+transmission at the observation time. The frequency catalog does not specify measured occupied bandwidth,
+Doppler, calibrated power, polarization, or interference received by an actual telescope. The application will add illustrative Gaussian carrier profiles and relative-power coefficients from the scenario configuration.
 
 ## What is not implemented
 

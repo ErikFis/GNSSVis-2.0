@@ -1,11 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "scenario_id": "uirapuru_gps_zenith_20260822",
-  "purpose": "Historical reference scenario for developing an offline GNSSVis application; not a measured observation.",
+  "purpose": "Historical reference scenario for an offline synthetic GNSS waterfall application; not a measured observation.",
   "time_grid": {
     "start_utc": "2026-08-22T00:00:00Z",
     "duration_seconds": 21600,
-    "step_seconds": 60,
+    "step_seconds": 10,
     "interval": "left_closed_right_open",
     "time_scale": "UTC"
   },
@@ -25,19 +25,20 @@
     "azimuth_convention": "degrees east of north; azimuth is immaterial at the zenith"
   },
   "beam": {
-    "model": "circular_top_hat",
+    "model": "circular_selection_gate",
     "full_width_deg": 30.0,
     "inside_rule": "angular_separation_deg <= full_width_deg / 2",
     "minimum_altitude_deg": 0.0,
-    "refraction": "none"
+    "refraction": "none",
+    "selection_note": "The hard circular gate defines passage support. Emission has a separate Gaussian angular gain inside this gate."
   },
   "receiver": {
     "band_min_hz": 1500000000,
     "band_max_hz": 1600000000,
     "frequency_rule": "band_min_hz <= carrier_hz <= band_max_hz",
-    "frequency_model": "nominal_carrier_center_only",
+    "frequency_model": "nominal_carrier_centers_with_synthetic_gaussian_profiles",
     "doppler": "not_modelled",
-    "occupied_bandwidth": "not_modelled"
+    "occupied_bandwidth": "Actual GPS modulation bandwidth is not modelled; the synthetic profile width is configured below."
   },
   "references": {
     "tle_file": "reference_data/satellites.tle",
@@ -74,8 +75,10 @@
     ]
   },
   "randomness": {
-    "enabled": false,
-    "seed": null
+    "enabled": true,
+    "seed": 42,
+    "generator": "numpy.random.default_rng",
+    "reproducibility": "Same seed, effective configuration, and dependency versions reproduce the generated arrays. Record versions and use stated tolerances across environments."
   },
   "output": {
     "default_directory": "outputs/offline",
@@ -86,10 +89,83 @@
     "passages_file": "passages.csv",
     "metadata_file": "metadata.json",
     "measured_observation_input_required": false,
-    "fits_output_required": false
+    "fits_output_required": false,
+    "waterfall_file": "waterfall.npz",
+    "figure_file": "waterfall.png",
+    "array_dtype": "float32 for generated power arrays",
+    "axis_dtype": "float64 for frequency centers; integer UTC time offsets from start",
+    "npz_arrays": [
+      "noise_power",
+      "signal_power",
+      "total_power",
+      "frequencies_hz",
+      "time_offsets_seconds"
+    ],
+    "power_array_order": "frequency,time",
+    "power_unit": "relative linear power; never sum in dB",
+    "plot_export_required": true
   },
   "path_rules": {
     "reference_paths": "relative to the repository root, not the caller working directory",
     "output_directory": "default from this file; an explicit CLI output override is permitted"
+  },
+  "frequency_grid": {
+    "channel_count": 512,
+    "channel_placement": "uniform bin centers spanning the receiver band",
+    "frequency_axis_unit": "Hz"
+  },
+  "noise": {
+    "model": "independent_averaged_white_noise_power",
+    "mean_power_relative": 1.0,
+    "averages": 16,
+    "distribution": "Gamma(shape=averages, scale=mean_power_relative/averages)",
+    "interpretation": "Equivalent power statistics of averaged independent complex Gaussian white-noise samples; no voltage waveform or FFT is required. Power pixels are not Gaussian.",
+    "antenna_temperature_model": false,
+    "receiver_electronics_model": false
+  },
+  "emission": {
+    "model": "relative_gaussian_carrier_power",
+    "profile_key": "satellite_catalog.block",
+    "profiles": {
+      "IIF": {
+        "peak_power_relative_at_reference_range": 20.0,
+        "reference_range_m": 20000000.0,
+        "spectral_sigma_hz": 500000.0,
+        "spectral_cutoff_sigma": 3.0
+      },
+      "III": {
+        "peak_power_relative_at_reference_range": 20.0,
+        "reference_range_m": 20000000.0,
+        "spectral_sigma_hz": 500000.0,
+        "spectral_cutoff_sigma": 3.0
+      }
+    },
+    "range_scaling": "(reference_range_m / topocentric_range_m) ** 2",
+    "angular_gain": "exp(-4 * ln(2) * (angular_separation_deg / beam.full_width_deg) ** 2)",
+    "time_support": "Only samples inside the configured beam selection gate and above the horizon.",
+    "spectral_profile": "exp(-0.5 * ((frequency_hz-carrier_hz)/spectral_sigma_hz)**2), truncated outside spectral_cutoff_sigma*spectral_sigma_hz",
+    "carrier_selection": "Inject only nominal carrier centers inside the receiver band.",
+    "combination": "Add independent satellite/carrier contributions in linear relative power.",
+    "calibration": "Illustrative equal profile coefficients for IIF and III, not measured EIRP, dBm, or block-specific calibrated power.",
+    "measurement_models_excluded": [
+      "actual GPS modulation",
+      "Doppler",
+      "polarization",
+      "antenna thermal noise",
+      "receiver electronics",
+      "multipath"
+    ]
+  },
+  "display": {
+    "layout": "GNSSVis-style upper passage panel, lower waterfall, right-hand satellite/color table, and horizontal colorbar",
+    "upper_y_axis": "angular_separation_deg",
+    "beam_boundary_line": true,
+    "frequency_axis": "MHz",
+    "time_axis": "UTC",
+    "carrier_marker_linestyle": ":",
+    "carrier_markers": "One dotted horizontal line and label per in-band nominal carrier, not duplicate lines for satellites sharing that carrier.",
+    "intensity": "10*log10(total_power_relative/noise.mean_power_relative)",
+    "intensity_label": "Relative power [dB re configured mean background]",
+    "shared_geometry": "Use the same time grid and passage masks for synthesis and both panels."
   }
 }

@@ -23,7 +23,7 @@ These small reference files are intentionally versioned rather than ignored.
 
 Read `docs/OBSERVATION_SCENARIO.md` for the agreed conventions and
 `docs/FIRST_PROMPT.md` for context to supply at the start of the Taiga session.
-The scenario loader, offline GNSS-only integration, and simulation application
+The scenario loader, offline GNSS-only integration, white-noise and relative-emission models, waterfall figure, and simulation application
 are not implemented yet. They are the work to perform during the task.
 
 ## Upload to Taiga

@@ -1,80 +1,63 @@
-# First Taiga message
+# Context for the first Taiga message
 
-Rewrite the following in your own words if desired. It is technical task
-context, not a model-behavior rating, flag comment, or comparison justification.
-The model does not see the reviewer's task-brief fields, so include this context
-in the conversation. Upload the GitHub source ZIP first, without any `.git`
-directory, and keep its extraction destination at `/workspace`.
+This is technical task context to rewrite or adapt before starting. It is not
+an evaluation, flag comment, or preference justification. The reviewer brief is
+not visible to the model, so repeat the context in your first conversation turn.
+Upload the GitHub main-branch source ZIP without `.git`, mounted at `/workspace`.
 
-## English starting prompt
+## English starting message
 
-I am extending my existing GNSSVis project with a separate application for
-analyzing potential GNSS interference during radio telescope observations.
-This is an additional use of GNSSVis as a calculation library, not a full radio
-waveform simulator or a scientific validation suite for the entire library.
+I wrote GNSSVis to analyze radio telescope observations. I now want a separate
+simulation application that uses its geometry and keeps the same visual style.
+The result I want is a synthetic waterfall with a white-noise background and
+GNSS signal profiles appearing at their nominal frequencies while each satellite
+is passing through the telescope beam. Above it, I want the satellite passage
+plot; on the right, the satellite/color list, like the existing GNSSVis figure.
+Please include dotted carrier-frequency lines and a properly labeled colorbar.
 
-Reuse the existing trajectory and angular-geometry calculations instead of
-building a disconnected implementation. Keep the application logic separate
-from the existing modules and preserve their default public behavior. Small
-backward-compatible changes to enable a GNSS-only offline path are in scope.
+The inputs and observation parameters are already chosen. Read
+`examples/scenarios/offline.json`, `docs/OBSERVATION_SCENARIO.md`, and the files in
+`reference_data/`. They specify a six-hour historical UIRAPURU zenith observation,
+six real GPS TLEs, 10-second samples, 512 frequency channels, and the nominal
+L1/L2/L5 frequencies. Only L1 is inside the selected 1500-1600 MHz band. Use the
+configuration throughout rather than asking me to choose those values again.
 
-The input files are already in this upload:
+I would like a simple emission model rather than just painting rectangles on
+random data: a finite-width Gaussian profile at each in-band carrier, a relative
+amplitude that changes with topocentric distance and position in the beam, and a
+time mask from the calculated passage. Add contributions in linear power, then
+convert to relative dB for display. The specification contains illustrative
+coefficients; do not present them as measured GPS transmission powers.
 
-- `examples/scenarios/offline.json`: the single source of truth for observation
-  parameters and processing conventions.
-- `reference_data/satellites.tle`: six frozen real GPS TLEs, with their epochs
-  and identities in `reference_data/satellites.csv`.
-- `reference_data/signals.csv`: nominal GPS L1/L2/L5 carriers in Hz.
-- `reference_data/provenance.json`: sources and integrity hashes.
-- `docs/OBSERVATION_SCENARIO.md`: decisions, output schema, and limitations.
+The background should be reproducible synthetic white noise, with no calibrated
+antenna or receiver-noise model. Keep the background generator, emission model,
+and plotting separate enough to extend later. We are not modelling Doppler,
+actual GPS modulation, or absolute received power in this first version.
 
-Read these files first. The scenario is already chosen: a six-hour historical
-window starting at 2026-08-22 00:00 UTC, 60-second samples, the UIRAPURU reference
-site, a fixed zenith pointing, a circular 30-degree full-width beam, and a
-1500-1600 MHz receiver band. Use the JSON values throughout the workflow. Do not
-ask me to redefine these parameters or silently replace them with different
-library defaults. Raise genuine contradictions or missing essentials before
-implementing the affected behavior.
+Please start by reading the existing geometry and plotting code and checking
+which parts can be reused. The current SkyAnalyzer initialization and trajectory
+loading can trigger downloads, so the new application needs a real local-TLE,
+GNSS-only path with no mandatory DE421 file or network access. Preserve the
+existing default APIs and avoid a separate duplicate geometry implementation.
 
-The simulation application and JSON loader are not implemented yet. Start by
-inspecting the current code, particularly `SkyAnalyzer.__init__`,
-`get_gnss_trajectories`, and `find_objects_in_fov`, and check dependency
-availability. These paths currently involve downloads. Implement the smallest
-maintainable GNSS-only path that accepts the bundled TLEs and uses no network
-access, no mandatory DE421 file, and no external Earth-orientation updates.
-Do not use file modification times or today's date in place of TLE epochs.
+Work through this incrementally: offline geometry, seeded background, emission
+profiles and passage masks, the combined waterfall, and then the complete figure
+and exports. Keep the upper panel and signal mask on exactly the same sampled
+time grid. The time resolution is 10 seconds; do not claim exact continuous
+crossing times. Use an angular-separation axis consistent with the fixed zenith
+pointing rather than blindly copying a fixed-RA/Dec plot.
 
-Then develop the configuration-driven application incrementally: calculate
-topocentric geometry in the agreed local frame, identify sampled beam passages,
-match nominal signal carriers with the receiver band, and generate
-`samples.csv`, `passages.csv`, and `metadata.json`. Follow the units, timestamp
-boundaries, clipping rules, and schemas in the scenario guide. Nominal carrier
-overlap indicates potential interference only; do not add received-power,
-Doppler, occupied-bandwidth, or full waveform models.
-
-The proposed execution interface to implement is:
+The proposed command to implement is:
 
 ```bash
 python -m gnssvis_simulation --config examples/scenarios/offline.json --output outputs/offline
 ```
 
-Provide meaningful automated tests and a documented offline example. Check
-controlled geometry expectations, beam boundaries, no-passage and out-of-band
-cases, invalid inputs, configuration propagation, reproducibility with stated
-tolerances, and at least one real local-TLE integration path. Do not use mocks
-as the only evidence that the application works offline.
-
-This workspace has no general internet access. Keep generated outputs ignored,
-do not run `git init` or `git clone` inside `/workspace`, and avoid unrelated
-refactoring. Keep code, comments, documentation, and runtime messages in English
-without emojis. Report the checks you actually ran and their results, and stop
-after the agreed behavior and checks are complete.
-
-## Reviewer brief reminder
-
-The task description should state the existing offline coupling and the new
-application goal. Completion criteria should reference the actual implemented
-command, the scenario guide, the 360-timestamp / six-satellite grid, the signal
-band decisions, offline integration, and passing meaningful tests. Keep proposed
-commands labeled as deliverables until they have actually been implemented.
-Write your own behavior evaluations and final assessment from observed evidence.
+It should generate `waterfall.png`, `waterfall.npz`, `samples.csv`, `passages.csv`,
+and `metadata.json` as described in the scenario guide. These are deliverables,
+not commands or outputs that already exist. Include focused meaningful tests,
+a real offline end-to-end example, and documentation of the assumptions and
+future extension points. The task environment has no general internet access;
+do not run `git init` or `git clone` there. Keep code, comments and documentation
+in English without emojis, leave generated outputs ignored, and report the
+checks you actually ran. Stop after the agreed result has been verified.
