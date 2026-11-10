@@ -1,74 +1,46 @@
-# Context for the first Taiga message
+# Starting context and follow-up prompts
 
-This is technical task context to rewrite or adapt before starting. It is not
-an evaluation, flag comment, or preference justification. The reviewer brief is
-not visible to the model, so repeat the context in your first conversation turn.
-Upload the GitHub main-branch source ZIP without `.git`, mounted at `/workspace`.
+These are technical task messages, not behavior evaluations, flag comments or
+comparison justifications. The reviewer brief is not visible to the model.
+The shared specification remains `examples/scenarios/offline.json`, explained
+in `docs/OBSERVATION_SCENARIO.md`. The application is to be implemented during
+the task, using the existing GNSSVis library.
 
-## English starting message
+## First message
 
-I wrote GNSSVis to analyze radio telescope observations. I now want a separate
-simulation application that uses its geometry and keeps the same visual style.
-The result I want is a synthetic waterfall with a white-noise background and
-GNSS signal profiles appearing at their nominal frequencies while each satellite
-is passing through the telescope beam. Above it, I want the satellite passage
-plot; on the right, the satellite/color list, like the existing GNSSVis figure.
-Please include dotted carrier-frequency lines and a properly labeled colorbar.
+I built GNSSVis to help identify possible satellite interference in radio telescope observations. I now want to add a separate simulation pipeline, because real observations are scarce and can be very large. The result I have in mind is a synthetic waterfall with background noise and satellite signals appearing during their beam passages, using the same plot layout as GNSSVis.
 
-The inputs and observation parameters are already chosen. Read
-`examples/scenarios/offline.json`, `docs/OBSERVATION_SCENARIO.md`, and the files in
-`reference_data/`. They specify a six-hour historical UIRAPURU zenith observation,
-six real GPS TLEs, 10-second samples, 512 frequency channels, and the nominal
-L1/L2/L5 frequencies. Only L1 is inside the selected 1500-1600 MHz band. Use the
-configuration throughout rather than asking me to choose those values again.
+I have included the TLEs, signal frequencies and a reference scenario in examples/scenarios/offline.json. The time and frequency resolution should come from that file so I can change them later. For this example, the power arrays will be float32 with 512 frequency rows in Hz and 2160 time columns, 10 seconds apart. Time offsets are integer seconds from the UTC start, and each cell contains linear relative power.
 
-I would like a simple emission model rather than just painting rectangles on
-random data: a finite-width Gaussian profile at each in-band carrier, a relative
-amplitude that changes with topocentric distance and position in the beam, and a
-time mask from the calculated passage. Add contributions in linear power, then
-convert to relative dB for display. The specification contains illustrative
-coefficients; do not present them as measured GPS transmission powers.
+The planned signal model is a Gaussian frequency profile with inverse-square distance scaling and a Gaussian angular response inside the beam. I want to build this in stages, starting with the geometry. Could you look at the existing SGP4 code and make it work with the local TLEs, without needing DE421 or network downloads? I would like to keep the current GNSSVis interfaces working. Let's check this part before adding the noise and emission. Please do not run git init or git clone in this workspace.
 
-The background should be reproducible synthetic white noise, with no calibrated
-antenna or receiver-noise model. Keep the background generator, emission model,
-and plotting separate enough to extend later. We are not modelling Doppler,
-actual GPS modulation, or absolute received power in this first version.
+## Background noise
 
-Please start by reading the existing geometry and plotting code and checking
-which parts can be reused. The current SkyAnalyzer initialization and trajectory
-loading can trigger downloads, so the new application needs a real local-TLE,
-GNSS-only path with no mandatory DE421 file or network access. Preserve the
-existing default APIs and avoid a separate duplicate geometry implementation.
+Now I would like to generate the background noise on the configured frequency and time grid. Since the matrix represents averaged power, let's use Gamma(shape=M, scale=P0/M), where P0 is the configured mean power and M is the number of averages. I want to use NumPy default_rng with the saved seed so I can reproduce it. The output should be float32 in linear relative power, with frequency rows in Hz and time columns stored as integer seconds from the UTC start.
 
-Work through this incrementally: offline geometry, seeded background, emission
-profiles and passage masks, the combined waterfall, and then the complete figure
-and exports. Keep the upper panel and signal mask on exactly the same sampled
-time grid. The time resolution is 10 seconds; do not claim exact continuous
-crossing times. Use an angular-separation axis consistent with the fixed zenith
-pointing rather than blindly copying a fixed-RA/Dec plot.
+## Satellite emission
 
-The proposed command to implement is:
+Next I want to add the satellite emission. For each carrier inside the band, let's use a Gaussian profile centered on its nominal frequency. Its amplitude should follow P_ref * (r_ref/r)**2, with the Gaussian angular gain from the scenario. The passage mask should turn the contribution off outside the beam. I would like the widths and coefficients to come from the configuration, and signals at the same frequency to add together rather than replace each other.
 
-```bash
-python -m gnssvis_simulation --config examples/scenarios/offline.json --output outputs/offline
-```
+## Waterfall and application outputs
 
-Wire the functions into that executable command; it must save its figure and exit without requiring a GUI window.
+Now I would like to see the combined waterfall. Let's add the noise and signal contributions in linear power, then plot 10*log10(total_power/P0). I want UTC time on X, frequency in MHz on Y, and relative dB as the color scale, with dotted carrier-frequency lines.
 
-It should generate `waterfall.png`, `waterfall.npz`, `samples.csv`, `passages.csv`,
-and `metadata.json` as described in the scenario guide. These are deliverables,
-not commands or outputs that already exist. Include focused meaningful tests,
-a real offline end-to-end example, and documentation of the assumptions and
-future extension points. The task environment has no general internet access;
-do not run `git init` or `git clone` there. Keep code, comments and documentation
-in English without emojis, leave generated outputs ignored, and report the
-checks you actually ran. Stop after the agreed result has been verified.
+The layout should look like GNSSVis, with the passage plot above and the satellite/color list on the right. For our zenith pointing, the upper panel should show angular separation. Could you connect this to python -m gnssvis_simulation --config examples/scenarios/offline.json and save the PNG, NPZ, tables and metadata in outputs/offline? The command should finish without waiting for me to close a plot window.
 
-## Matrix convention
+## End-to-end verification
 
-The `matrix_contract` section in the shared JSON defines rows, columns and cell
-values explicitly. Use `(frequency, time)` with shape `(512, 2160)` for this
-scenario. Store frequency centers in Hz, time offsets as integer seconds since
-the UTC start, and noise/signal/total cells in linear relative power. In the
-figure, display time on X, frequency in MHz on Y, and total power as a relative
-dB color scale. Do not interpret the color quantity as a third array dimension.
+I would like to check the full example now, including the saved figure and arrays. Can you verify that the signal appears at the right frequency and passage times, stays zero outside the mask, and follows the distance and beam response? I also want to check overlapping signals and out-of-band carriers. With a different seed, only the background should change. Please run the offline example and tests, show me the results, and fix anything that still fails.
+
+## Documentation and completion
+
+To finish, I would like clear instructions for reproducing the example and a short explanation of the model's assumptions and limits. The metadata should include the configuration, seed and dependency versions. I would also like the noise and emission functions to be easy to extend later, without adding those future models now. Could you check that the agreed outputs and tests are complete and summarize what has actually been verified?
+
+## Units and scope
+
+The reference arrays have `(frequency, time)` shape `(512, 2160)`, but resolution
+must remain configurable through the shared scenario. Frequency centers are in
+Hz; time offsets are integer seconds from the UTC start; power cells are float32
+in relative linear units. The plot displays UTC time on X, MHz on Y, and relative
+dB as color. Future pulsar/FRB models are outside the present implementation.
+No simulation implementation is included as part of preparing these messages.
