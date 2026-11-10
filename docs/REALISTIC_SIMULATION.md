@@ -145,7 +145,7 @@ synthetic noise, not a time-integrated voltage/FFT receiver calculation.
 - Five PNGs: overview, components, L1/Doppler detail, spectral/beam models and
   a Sun-only view.
 
-Plots use the GNSSVis white background, plasma colormap, upper trajectory panel and existing object-table helper. All waterfalls share the full finite range of the combined observation (approximately -6.44 to +16.93 relative dB). No values are clipped. The upper panel uses elevation offsets for the fixed alt/az pointing, or radial Doppler in the L1 detail. Separate satellite-only and Sun-only views show their corresponding objects.
+Plots use the GNSSVis white background, plasma colormap, upper trajectory panel and existing object-table helper. All waterfalls share the full finite range of the combined observation (approximately -6.44 to +16.93 relative dB). No values are clipped. The upper panel uses angular separation from the fixed alt/az pointing, with thin visible trajectories and thick half-power segments, or radial Doppler in the L1 detail. Entry/exit lines and the passage/band table follow the simulation 2.0 layout. Separate satellite-only and Sun-only views show their corresponding objects.
 
 Tests cover Doppler sign, radial velocity against a finite range derivative,
 beam FWHM and chromatic scaling, angular wrapping, channel rebinning,

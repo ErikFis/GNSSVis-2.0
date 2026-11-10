@@ -30,24 +30,42 @@ def plot_realistic_figures(r, output: Path):
         with plt.rc_context(matplotlib.rcParamsDefault):
             fig = plt.figure(figsize=(16,10))
             gs = fig.add_gridspec(2,2,width_ratios=[3,1.2],height_ratios=[1,3],
-                                 hspace=.35,wspace=.35)
+                                 hspace=.12,wspace=.28,left=.06,right=.98,top=.92,bottom=.07)
             top=fig.add_subplot(gs[0,0]); wf=fig.add_subplot(gs[1,0],sharex=top)
             table=fig.add_subplot(gs[:,1]); table.axis('off')
-            legend=[]
+            from .geometry import find_passages
+            from datetime import timedelta
+            legend=[]; intervals=[]; bands=[]
+            def trajectory(label, color, values, mask, visible, band):
+                top.plot(t,np.where(visible,values,np.nan),color=color,lw=.8,alpha=.35)
+                top.plot(t,np.where(mask,values,np.nan),color=color,lw=2.6)
+                runs=find_passages(mask,sc.step_seconds)
+                times=[]
+                for run in runs:
+                    entry=sc.start_utc+timedelta(seconds=run.entry_offset_seconds)
+                    leave=sc.start_utc+timedelta(seconds=run.exit_offset_seconds)
+                    times.append(f'{entry:%H:%M}–{leave:%H:%M}')
+                    for ax in (top,wf):
+                        ax.axvline(mdates.date2num(entry),color=color,ls='--',lw=.7,alpha=.55)
+                        ax.axvline(mdates.date2num(leave),color=color,ls='--',lw=.7,alpha=.55)
+                legend.append((label,color));intervals.append('\n'.join(times) or 'none');bands.append(band)
             for row in (rows if gps else []):
-                mask=r.half_power_mask[row]
-                values=r.doppler_hz[row]/1000 if doppler else y[row]
-                top.scatter(t[mask],values[mask],s=6.25,color=colors[row],alpha=.85,linewidths=0)
-                legend.append((g.satellites[row].name,colors[row]))
+                sat=g.satellites[row]
+                trajectory(sat.name,colors[row],r.doppler_hz[row]/1000 if doppler else g.separation_deg[row],
+                           r.half_power_mask[row],g.above_horizon[row],
+                           'L1' if crop else ('L1 L2 L5' if sat.block in ('IIF','III') else 'L1 L2'))
             if solar and not doppler:
-                top.scatter(t[sun_mask],r.solar['offset_y_deg'][sun_mask],s=35,
-                            marker='*',color='goldenrod',linewidths=0)
-                legend.append(('Sun','goldenrod'))
-            top.axhline(0,color='gray',ls='--',lw=.5,alpha=.5)
-            top.set_ylabel('Doppler L1 [kHz]' if doppler else 'Relative elevation offset [°]')
-            top.set_title('Satellite Doppler inside the half-power beam' if doppler else
-                          'Object trajectories relative to the fixed pointing',fontsize=11,fontweight='bold')
-            if not doppler: top.set_ylim(-25,25)
+                trajectory('Sun','goldenrod',r.solar['separation_deg'],sun_mask,r.solar['alt_deg']>0,'wideband')
+            top.set_ylabel('Doppler L1 [kHz]' if doppler else 'Separation from\npointing [deg]')
+            top.set_title('Satellite Doppler; thick = inside half power' if doppler else
+                          'Object passages: angular separation from pointing; thick = inside half power',fontsize=11,fontweight='bold')
+            if not doppler:
+                minor=beam['minor_width_deg']/2;major=beam['full_width_deg']/2
+                top.axhspan(0,minor,color='green',alpha=.07)
+                top.axhspan(minor,major,color='green',alpha=.13)
+                for boundary in (minor,major):top.axhline(boundary,color='green',ls='--',lw=.8)
+                top.text(.002,major,' elliptical half-power boundary: 20–25 deg',transform=top.get_yaxis_transform(),fontsize=8,color='green',va='bottom')
+                top.set_ylim(0,90);top.set_yticks([0,15,30,45,60,75,90])
             top.grid(True,alpha=.3)
             top.tick_params(labelbottom=False)
             keep=np.ones(len(f),dtype=bool) if crop is None else ((f>=crop[0])&(f<=crop[1]))
@@ -58,20 +76,28 @@ def plot_realistic_figures(r, output: Path):
                          vmin=limits[0],vmax=limits[1])
             for hz,label in ([(1176.45,'GPS L5'),(1227.60,'GPS L2'),(1575.42,'GPS L1')] if gps else []):
                 if f[keep][0]-half<=hz<=f[keep][-1]+half:
-                    wf.axhline(hz,color='cyan',ls='--',alpha=.7,lw=1)
-                    wf.text(1.015,hz,f'{label}\n{hz:.2f} MHz',transform=wf.get_yaxis_transform(),
-                            fontsize=8,va='center')
+                    wf.axhline(hz,color='white',ls=':',alpha=.9,lw=1)
+                    wf.text(.005,hz,f'{label} {hz:.2f} MHz',transform=wf.get_yaxis_transform(),
+                            fontsize=8,va='bottom',color='white',bbox=dict(facecolor='black',alpha=.45,edgecolor='none',pad=1.5))
             wf.set_xlim(t[0],end)
             wf.xaxis.set_major_locator(mdates.HourLocator(interval=4))
             wf.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m\n%H:%M'))
             wf.set_xlabel('Time [UTC]');wf.set_ylabel('Frequency [MHz]')
             wf.set_title(title,fontsize=11,fontweight='bold')
-            fig.colorbar(im,ax=wf,orientation='horizontal',label='Relative power [dB re mean background]',pad=.16)
-            Visualizer.draw_object_table(table,legend,fontsize=9,row_scale=2.1,name_width=24)
-            table.set_title('Objects crossing half power at L1',fontsize=11,fontweight='bold')
-            fig.suptitle('GNSSVis — synthetic 24-hour observation',fontsize=13)
-            fig.text(.125,.025,'Fixed alt/az pointing; elliptical half-power selection at 1575.42 MHz. '
-                     'Gaussian wings contribute outside this contour. Illustrative powers.',fontsize=8)
+            fig.colorbar(im,ax=wf,orientation='horizontal',label='Relative power [dB re mean background]',pad=.12,fraction=.05,aspect=50)
+            Visualizer.draw_object_table(table,legend,extra_columns=[('Passage UTC',intervals),('Band',bands)],
+                                         col_widths=[.43,.12,.30,.15],fontsize=7.5,row_scale=1.9,name_width=24,loc='upper center')
+            table.set_title('Objects with half-power passages',fontsize=11,fontweight='bold')
+            table.text(0,.02,'Thin: above horizon. Thick: inside half power.\n'
+                       'Dashed verticals: entry and exclusive exit.\n'
+                       'Table: objects crossing half power at L1.\n'
+                       'Power sums visible members of the 32-GPS catalog,\n'
+                       'including Gaussian wings outside this contour.\n\n'
+                       'Elliptical beam: 50 × 40 deg at L1.\n'
+                       'Angular boundary depends on direction (20–25 deg).\n'
+                       'Doppler and BPSK spectral profiles are modelled.\n'
+                       'Relative power, not calibrated.',transform=table.transAxes,fontsize=8,family='monospace',va='bottom')
+            fig.suptitle(f'{sc.config["scenario_id"]}: synthetic, not a measured observation (seed 42; relative power)',fontsize=12)
             fig.savefig(output/name,dpi=150)
             plt.close(fig)
 

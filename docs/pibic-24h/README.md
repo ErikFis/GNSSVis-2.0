@@ -34,4 +34,4 @@ de consistência da simulação aprovados.
 O ZIP de dados omite apenas a matriz total redundante. `reconstruir_waterfall.py`
 recria o NPZ original por soma em float32, sem perda numérica.
 
-Gráficos no padrão GNSSVis: fundo branco, plasma, trajetórias acima e tabela de objetos à direita. O deslocamento vertical é de elevação para este apontamento alt/az fixo.
+Gráficos no padrão GNSSVis: fundo branco, plasma, trajetórias acima e tabela de objetos à direita. O painel superior mostra separação angular, trajetórias finas e trechos destacados; linhas verticais e tabela indicam entrada, saída e bandas.
