@@ -53,6 +53,8 @@ The proposed command to implement is:
 python -m gnssvis_simulation --config examples/scenarios/offline.json --output outputs/offline
 ```
 
+Wire the functions into that executable command; it must save its figure and exit without requiring a GUI window.
+
 It should generate `waterfall.png`, `waterfall.npz`, `samples.csv`, `passages.csv`,
 and `metadata.json` as described in the scenario guide. These are deliverables,
 not commands or outputs that already exist. Include focused meaningful tests,

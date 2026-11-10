@@ -166,7 +166,9 @@
     "carrier_markers": "One dotted horizontal line and label per in-band nominal carrier, not duplicate lines for satellites sharing that carrier.",
     "intensity": "10*log10(total_power_relative/noise.mean_power_relative)",
     "intensity_label": "Relative power [dB re configured mean background]",
-    "shared_geometry": "Use the same time grid and passage masks for synthesis and both panels."
+    "shared_geometry": "Use the same time grid and passage masks for synthesis and both panels.",
+    "interactive_show": false,
+    "color_limits": "Full finite range of the displayed total-power dB array; do not clip narrow transient signals using background-dominated percentiles."
   },
   "matrix_contract": {
     "rank": 2,

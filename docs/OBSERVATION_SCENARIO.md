@@ -21,6 +21,13 @@ The upper panel uses angular separation from the actual configured pointing,
 with the 15-degree selection boundary. Do not copy a relative-declination axis
 that is inconsistent with the fixed-ground zenith pointing. Preserve the layout
 and reuse/adapt plotting code without breaking the existing public behavior.
+The application command must save the figure and exit without requiring a GUI
+window or a blocking `show()` call. Use the full finite range of displayed
+relative-dB values for the new figure so narrow transient signals are not
+saturated by background-dominated 2nd/98th-percentile color limits. Record the
+actual display bounds in the metadata. Keep the original plotting defaults
+compatible for existing users.
+
 The current visualizer calls `show()` and uses fixed RA/Dec-related assumptions;
 consider a small backward-compatible adapter or extension for the new workflow.
 
