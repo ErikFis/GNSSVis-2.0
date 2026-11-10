@@ -1,0 +1,41 @@
+{
+  "tle": {
+    "original_provider": "CelesTrak, via historical upstream snapshot",
+    "source_url": "https://raw.githubusercontent.com/ErikFis/gnssvis/4b3f5b75e28dc5346e74544e47e9b1ecaf5c5c84/data/tle_repository/gnss/gnss.txt",
+    "source_commit": "4b3f5b75e28dc5346e74544e47e9b1ecaf5c5c84",
+    "source_sha256": "0b0e942b68214a08eae603887985955d850272adee86f4f6abd8285d1e4d0ca2",
+    "selection": "All 32 records whose name starts with GPS; health/status unknown; retrospective TLE epochs can follow observation samples.",
+    "downloaded_utc": "2026-11-10",
+    "satellite_count": 32
+  },
+  "frequency_sources": [
+    {
+      "id": "IS-GPS-200N-3.3.1.1",
+      "title": "IS-GPS-200N",
+      "document_date": "2022-08-01",
+      "section": "3.3.1.1 Frequency Plan",
+      "url": "https://www.gps.gov/sites/default/files/2025-07/IS-GPS-200N.pdf",
+      "document_sha256": "54ec544bfe7e6acd97daaa1de0ca248e5abec6b418f23c1a69991e5c7bcf749a",
+      "carriers_hz": {
+        "GPS_L1": 1575420000,
+        "GPS_L2": 1227600000
+      }
+    },
+    {
+      "id": "IS-GPS-705J-3.3.1.1",
+      "title": "IS-GPS-705J",
+      "document_date": "2022-08-01",
+      "section": "3.3.1.1 Frequency Plan",
+      "url": "https://www.gps.gov/sites/default/files/2025-07/IS-GPS-705J.pdf",
+      "document_sha256": "532fc3b89061dff84e34406b9a5b41e34b83bdc8cc194b7b7f75a70b15391885",
+      "carriers_hz": {
+        "GPS_L5": 1176450000
+      }
+    }
+  ],
+  "files_sha256": {
+    "satellites.tle": "b219c452001fa624e5cd80685f36e4a25247cdc36fb8afec73b25213a41d8eae",
+    "satellites.csv": "03d7d486d2ce4dca5fb8fab901608de8eda351bbc9f7a2c44f98f6de28f8434a",
+    "signals.csv": "e44d910be08df6585698f20eed7640b1d130a0a86f59b930643a8cd24af68075"
+  }
+}

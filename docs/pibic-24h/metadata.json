@@ -1,0 +1,1150 @@
+{
+  "scenario_id": "pibic_gps_sun_24h_20260821",
+  "config_file": "/workspace/work/GNSSVis-2.0-main/examples/scenarios/pibic_24h.json",
+  "config_sha256": "616d72980c23de666ed2702c504061bac459343dc332e5313b4c5df646290abb",
+  "effective_config": {
+    "schema_version": 2,
+    "scenario_id": "pibic_gps_sun_24h_20260821",
+    "purpose": "Illustrative 24-hour simulation for the radio astronomy community; no BINGO affiliation or measured observation.",
+    "time_grid": {
+      "start_utc": "2026-08-21T06:00:00Z",
+      "duration_seconds": 86400,
+      "step_seconds": 60,
+      "interval": "left_closed_right_open",
+      "time_scale": "UTC"
+    },
+    "observatory": {
+      "name": "Configurable reference site in Para\u00edba; illustrative coordinates",
+      "latitude_deg": -7.211637,
+      "longitude_deg": -35.908138,
+      "elevation_m": 553.0,
+      "earth_model": "WGS84",
+      "elevation_convention": "Treat elevation_m as WGS84 ellipsoidal height for this reference simulation.",
+      "coordinate_source": "GNSSVis SkyAnalyzer defaults; not independently surveyed here."
+    },
+    "pointing": {
+      "mode": "fixed_altaz",
+      "azimuth_deg": 59.819450293397324,
+      "altitude_deg": 52.01669995994202,
+      "azimuth_convention": "degrees east of north"
+    },
+    "beam": {
+      "model": "chromatic_elliptical_gaussian",
+      "full_width_deg": 50.0,
+      "inside_rule": "gain_at_reference_frequency >= 0.5",
+      "minimum_altitude_deg": 0.0,
+      "refraction": "none",
+      "selection_note": "Elliptical half-power contour at reference frequency; full Gaussian tails synthesized above horizon.",
+      "minor_width_deg": 40.0,
+      "reference_frequency_hz": 1575420000.0,
+      "position_angle_deg": 0
+    },
+    "receiver": {
+      "band_min_hz": 1150000000.0,
+      "band_max_hz": 1600000000.0,
+      "frequency_rule": "band_min_hz <= carrier_hz <= band_max_hz",
+      "frequency_model": "channel-integrated BPSK proxy",
+      "doppler": "radial velocity from SGP4 topocentric state",
+      "occupied_bandwidth": "BPSK sinc\u00b2 narrow/broad mixture; not an exact composite ICD waveform"
+    },
+    "references": {
+      "tle_file": "reference_data/pibic_24h/satellites.tle",
+      "satellite_catalog_file": "reference_data/pibic_24h/satellites.csv",
+      "signal_catalog_file": "reference_data/pibic_24h/signals.csv",
+      "provenance_file": "reference_data/pibic_24h/provenance.json",
+      "norad_ids": [
+        26407,
+        27663,
+        28190,
+        28474,
+        28874,
+        29486,
+        29601,
+        32260,
+        32384,
+        32711,
+        35752,
+        36585,
+        38833,
+        39166,
+        39533,
+        39741,
+        40105,
+        40294,
+        40534,
+        40730,
+        41019,
+        41328,
+        43873,
+        44506,
+        45854,
+        46826,
+        48859,
+        55268,
+        62339,
+        64202,
+        67588,
+        68791
+      ],
+      "max_absolute_tle_epoch_offset_hours": 72
+    },
+    "geometry": {
+      "position_kind": "topocentric",
+      "propagator": "SGP4",
+      "comparison_frame": "local unrefracted altitude/azimuth for both the pointing and satellite",
+      "timescale_data": "bundled package data only; no external Earth-orientation update",
+      "planetary_ephemeris_required": true,
+      "network_access_allowed": true
+    },
+    "passages": {
+      "definition": "Runs inside the elliptical half-power contour at reference frequency and above horizon. Emission includes Gaussian wings.",
+      "entry_time": "first included sample",
+      "exit_time_exclusive": "first following excluded sample, or the observation end when clipped",
+      "duration": "number_of_included_samples * step_seconds",
+      "subsample_interpolation": false,
+      "clipping_flags": [
+        "entry_clipped",
+        "exit_clipped"
+      ]
+    },
+    "randomness": {
+      "enabled": true,
+      "seed": 42,
+      "generator": "numpy.random.default_rng",
+      "reproducibility": "Same seed, effective configuration, and dependency versions reproduce the generated arrays. Record versions and use stated tolerances across environments."
+    },
+    "output": {
+      "default_directory": "outputs/pibic_24h",
+      "encoding": "UTF-8",
+      "csv_delimiter": ",",
+      "timestamp_format": "ISO 8601 UTC with Z suffix",
+      "samples_file": "samples.csv",
+      "passages_file": "passages.csv",
+      "metadata_file": "metadata.json",
+      "measured_observation_input_required": false,
+      "fits_output_required": false,
+      "waterfall_file": "waterfall.npz",
+      "figure_file": "waterfall.png",
+      "array_dtype": "float32 for generated power arrays",
+      "axis_dtype": "float64 for frequency centers; integer UTC time offsets from start",
+      "npz_arrays": [
+        "noise_power",
+        "signal_power",
+        "total_power",
+        "frequencies_hz",
+        "time_offsets_seconds"
+      ],
+      "power_array_order": "frequency,time",
+      "power_unit": "relative linear power; never sum in dB",
+      "plot_export_required": true
+    },
+    "path_rules": {
+      "reference_paths": "relative to the repository root, not the caller working directory",
+      "output_directory": "default from this file; an explicit CLI output override is permitted"
+    },
+    "frequency_grid": {
+      "channel_count": 768,
+      "channel_placement": "uniform bin centers spanning the receiver band",
+      "frequency_axis_unit": "Hz"
+    },
+    "noise": {
+      "model": "independent_averaged_white_noise_power",
+      "mean_power_relative": 1.0,
+      "averages": 16,
+      "distribution": "Gamma(shape=averages, scale=mean_power_relative/averages)",
+      "interpretation": "Equivalent power statistics of averaged independent complex Gaussian white-noise samples; no voltage waveform or FFT is required. Power pixels are not Gaussian.",
+      "antenna_temperature_model": false,
+      "receiver_electronics_model": false
+    },
+    "emission": {
+      "model": "relative_gaussian_carrier_power",
+      "profile_key": "satellite_catalog.block",
+      "profiles": {
+        "IIF": {
+          "peak_power_relative_at_reference_range": 20.0,
+          "reference_range_m": 20000000.0,
+          "spectral_sigma_hz": 500000.0,
+          "spectral_cutoff_sigma": 3.0
+        },
+        "III": {
+          "peak_power_relative_at_reference_range": 20.0,
+          "reference_range_m": 20000000.0,
+          "spectral_sigma_hz": 500000.0,
+          "spectral_cutoff_sigma": 3.0
+        },
+        "IIR": {
+          "peak_power_relative_at_reference_range": 20.0,
+          "reference_range_m": 20000000.0,
+          "spectral_sigma_hz": 500000.0,
+          "spectral_cutoff_sigma": 3.0
+        }
+      },
+      "range_scaling": "(reference_range_m / topocentric_range_m) ** 2",
+      "angular_gain": "exp(-4 * ln(2) * (angular_separation_deg / beam.full_width_deg) ** 2)",
+      "time_support": "Only samples inside the configured beam selection gate and above the horizon.",
+      "spectral_profile": "exp(-0.5 * ((frequency_hz-carrier_hz)/spectral_sigma_hz)**2), truncated outside spectral_cutoff_sigma*spectral_sigma_hz",
+      "carrier_selection": "Inject only nominal carrier centers inside the receiver band.",
+      "combination": "Add independent satellite/carrier contributions in linear relative power.",
+      "calibration": "Illustrative equal profile coefficients for IIF and III, not measured EIRP, dBm, or block-specific calibrated power.",
+      "measurement_models_excluded": [
+        "actual GPS modulation",
+        "Doppler",
+        "polarization",
+        "antenna thermal noise",
+        "receiver electronics",
+        "multipath"
+      ]
+    },
+    "display": {
+      "layout": "GNSSVis-style upper passage panel, lower waterfall, right-hand satellite/color table, and horizontal colorbar",
+      "upper_y_axis": "angular_separation_deg",
+      "beam_boundary_line": true,
+      "frequency_axis": "MHz",
+      "time_axis": "UTC",
+      "carrier_marker_linestyle": ":",
+      "carrier_markers": "One dotted horizontal line and label per in-band nominal carrier, not duplicate lines for satellites sharing that carrier.",
+      "intensity": "10*log10(total_power_relative/noise.mean_power_relative)",
+      "intensity_label": "Relative power [dB re configured mean background]",
+      "shared_geometry": "Use the same time grid and passage masks for synthesis and both panels.",
+      "interactive_show": false,
+      "color_limits": "Full finite range of the displayed total-power dB array; do not clip narrow transient signals using background-dominated percentiles."
+    },
+    "matrix_contract": {
+      "rank": 2,
+      "dimension_order": [
+        "frequency",
+        "time"
+      ],
+      "shape_rule": [
+        "frequency_grid.channel_count",
+        "time_grid.duration_seconds / time_grid.step_seconds"
+      ],
+      "validation": "Require positive grid sizes and duration_seconds to be an exact multiple of step_seconds.",
+      "row_axis": {
+        "index": "i = 0 .. channel_count-1",
+        "quantity": "frequency",
+        "coordinate_array": "frequencies_hz",
+        "storage_unit": "Hz",
+        "storage_dtype": "float64",
+        "formula": "band_min_hz + (i + 0.5) * (band_max_hz - band_min_hz) / channel_count",
+        "display_axis": "Y",
+        "display_unit": "MHz"
+      },
+      "column_axis": {
+        "index": "j = 0 .. duration_seconds/step_seconds-1",
+        "quantity": "time",
+        "coordinate_array": "time_offsets_seconds",
+        "storage_unit": "seconds since time_grid.start_utc",
+        "storage_dtype": "int64",
+        "formula": "j * step_seconds",
+        "absolute_timestamp": "time_grid.start_utc + time_offsets_seconds[j] seconds, interpreted in UTC",
+        "interval": "start included, observation end excluded",
+        "display_axis": "X",
+        "display_format": "UTC date and time"
+      },
+      "cell_values": {
+        "indexing": "power[i,j] is power in frequency channel i at time sample j",
+        "arrays": [
+          "noise_power",
+          "signal_power",
+          "total_power"
+        ],
+        "storage_unit": "relative linear power; same normalization for all three arrays",
+        "storage_dtype": "float32",
+        "combination": "total_power[i,j] = noise_power[i,j] + signal_power[i,j]",
+        "display_encoding": "color, not a third array dimension",
+        "display_formula": "10 * log10(total_power[i,j] / noise.mean_power_relative)",
+        "display_unit": "dB relative to configured mean background power",
+        "not_units": [
+          "dBm",
+          "watts",
+          "voltage"
+        ]
+      }
+    },
+    "realistic_emission": {
+      "model": "channel_averaged_bpsk_proxy",
+      "peak_power_relative": 24.0,
+      "reference_range_m": 20000000.0,
+      "narrow_chip_rate_hz": 1023000.0,
+      "broad_chip_rate_hz": 10230000.0,
+      "broad_fraction": 0.32,
+      "note": "Illustrative equal amplitudes; IIR/IIR-M have no L5 in this model."
+    },
+    "solar": {
+      "ephemeris_file": "data/ephemeris/de421.bsp",
+      "allow_download": true,
+      "quiet_power_relative": 5.0,
+      "quiet_received_spectral_index": 0.0,
+      "active_power_relative": 0.0,
+      "electron_energy_index": 3.0,
+      "note": "Default quiet thermal Sun, flat relative received continuum proxy. Optional active continuum uses optically thin synchrotron slope -(p-1)/2; no real solar event or measured flux is claimed. Solar disk treated as unresolved versus 40-50 degree beam."
+    },
+    "scenario_selection": {
+      "criterion": "Maximize N_passages + 4*N_GPS_at_solar_center + 2*max_simultaneous across 12-16 UTC in 5-min steps; ties nearest 14:26 UTC.",
+      "selected": {
+        "sample": 375,
+        "utc": "2026-08-21T12:15:00Z",
+        "altitude_deg": 52.01669995994202,
+        "azimuth_deg": 59.819450293397324,
+        "passages": 17,
+        "simultaneous_at_sun": 2,
+        "maximum_simultaneous": 3,
+        "score": 31
+      },
+      "candidates": [
+        {
+          "sample": 360,
+          "utc": "2026-08-21T12:00:00Z",
+          "altitude_deg": 48.75538297933975,
+          "azimuth_deg": 62.4566676585333,
+          "passages": 14,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 3,
+          "score": 28
+        },
+        {
+          "sample": 365,
+          "utc": "2026-08-21T12:05:00Z",
+          "altitude_deg": 49.85151758906113,
+          "azimuth_deg": 61.625083586272986,
+          "passages": 14,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 3,
+          "score": 28
+        },
+        {
+          "sample": 370,
+          "utc": "2026-08-21T12:10:00Z",
+          "altitude_deg": 50.93887537154796,
+          "azimuth_deg": 60.7471895677785,
+          "passages": 15,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 3,
+          "score": 29
+        },
+        {
+          "sample": 375,
+          "utc": "2026-08-21T12:15:00Z",
+          "altitude_deg": 52.01669995994202,
+          "azimuth_deg": 59.819450293397324,
+          "passages": 17,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 3,
+          "score": 31
+        },
+        {
+          "sample": 380,
+          "utc": "2026-08-21T12:20:00Z",
+          "altitude_deg": 53.08415376984302,
+          "azimuth_deg": 58.83801774370452,
+          "passages": 16,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 3,
+          "score": 30
+        },
+        {
+          "sample": 385,
+          "utc": "2026-08-21T12:25:00Z",
+          "altitude_deg": 54.14030812521667,
+          "azimuth_deg": 57.798706809605186,
+          "passages": 16,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 3,
+          "score": 30
+        },
+        {
+          "sample": 390,
+          "utc": "2026-08-21T12:30:00Z",
+          "altitude_deg": 55.18413219400115,
+          "azimuth_deg": 56.696971295502564,
+          "passages": 16,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 3,
+          "score": 30
+        },
+        {
+          "sample": 395,
+          "utc": "2026-08-21T12:35:00Z",
+          "altitude_deg": 56.21448063894684,
+          "azimuth_deg": 55.52788140897335,
+          "passages": 15,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 2,
+          "score": 27
+        },
+        {
+          "sample": 400,
+          "utc": "2026-08-21T12:40:00Z",
+          "altitude_deg": 57.230079908365816,
+          "azimuth_deg": 54.286104300113855,
+          "passages": 15,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 23
+        },
+        {
+          "sample": 405,
+          "utc": "2026-08-21T12:45:00Z",
+          "altitude_deg": 58.229513126136034,
+          "azimuth_deg": 52.96588981513965,
+          "passages": 13,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 21
+        },
+        {
+          "sample": 410,
+          "utc": "2026-08-21T12:50:00Z",
+          "altitude_deg": 59.211203597542266,
+          "azimuth_deg": 51.56106440118912,
+          "passages": 13,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 2,
+          "score": 25
+        },
+        {
+          "sample": 415,
+          "utc": "2026-08-21T12:55:00Z",
+          "altitude_deg": 60.17339703581387,
+          "azimuth_deg": 50.06503707033937,
+          "passages": 13,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 2,
+          "score": 25
+        },
+        {
+          "sample": 420,
+          "utc": "2026-08-21T13:00:00Z",
+          "altitude_deg": 61.114142744747305,
+          "azimuth_deg": 48.47082251833276,
+          "passages": 13,
+          "simultaneous_at_sun": 2,
+          "maximum_simultaneous": 2,
+          "score": 25
+        },
+        {
+          "sample": 425,
+          "utc": "2026-08-21T13:05:00Z",
+          "altitude_deg": 62.031274179017075,
+          "azimuth_deg": 46.771087892800246,
+          "passages": 13,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 21
+        },
+        {
+          "sample": 430,
+          "utc": "2026-08-21T13:10:00Z",
+          "altitude_deg": 62.92238956048836,
+          "azimuth_deg": 44.95823126995501,
+          "passages": 12,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 20
+        },
+        {
+          "sample": 435,
+          "utc": "2026-08-21T13:15:00Z",
+          "altitude_deg": 63.784833571483915,
+          "azimuth_deg": 43.02450150687066,
+          "passages": 13,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 21
+        },
+        {
+          "sample": 440,
+          "utc": "2026-08-21T13:20:00Z",
+          "altitude_deg": 64.61568158596707,
+          "azimuth_deg": 40.962170553933184,
+          "passages": 14,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 22
+        },
+        {
+          "sample": 445,
+          "utc": "2026-08-21T13:25:00Z",
+          "altitude_deg": 65.41172843970826,
+          "azimuth_deg": 38.763770138011395,
+          "passages": 14,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 22
+        },
+        {
+          "sample": 450,
+          "utc": "2026-08-21T13:30:00Z",
+          "altitude_deg": 66.16948436423552,
+          "azimuth_deg": 36.422404345946255,
+          "passages": 15,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 23
+        },
+        {
+          "sample": 455,
+          "utc": "2026-08-21T13:35:00Z",
+          "altitude_deg": 66.88518136851337,
+          "azimuth_deg": 33.93214719181889,
+          "passages": 15,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 23
+        },
+        {
+          "sample": 460,
+          "utc": "2026-08-21T13:40:00Z",
+          "altitude_deg": 67.55479395039833,
+          "azimuth_deg": 31.288528676710964,
+          "passages": 15,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 23
+        },
+        {
+          "sample": 465,
+          "utc": "2026-08-21T13:45:00Z",
+          "altitude_deg": 68.17407839664327,
+          "azimuth_deg": 28.489103043652364,
+          "passages": 14,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 22
+        },
+        {
+          "sample": 470,
+          "utc": "2026-08-21T13:50:00Z",
+          "altitude_deg": 68.73863485572235,
+          "azimuth_deg": 25.534078113460442,
+          "passages": 15,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 23
+        },
+        {
+          "sample": 475,
+          "utc": "2026-08-21T13:55:00Z",
+          "altitude_deg": 69.24399555774579,
+          "azimuth_deg": 22.426964912944126,
+          "passages": 14,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 22
+        },
+        {
+          "sample": 480,
+          "utc": "2026-08-21T14:00:00Z",
+          "altitude_deg": 69.68574072787295,
+          "azimuth_deg": 19.175184147603684,
+          "passages": 13,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 21
+        },
+        {
+          "sample": 485,
+          "utc": "2026-08-21T14:05:00Z",
+          "altitude_deg": 70.05964071890146,
+          "azimuth_deg": 15.790544725644894,
+          "passages": 13,
+          "simultaneous_at_sun": 0,
+          "maximum_simultaneous": 2,
+          "score": 17
+        },
+        {
+          "sample": 490,
+          "utc": "2026-08-21T14:10:00Z",
+          "altitude_deg": 70.3618187580357,
+          "azimuth_deg": 12.289496332190089,
+          "passages": 13,
+          "simultaneous_at_sun": 0,
+          "maximum_simultaneous": 2,
+          "score": 17
+        },
+        {
+          "sample": 495,
+          "utc": "2026-08-21T14:15:00Z",
+          "altitude_deg": 70.58892395012832,
+          "azimuth_deg": 8.693061173253877,
+          "passages": 14,
+          "simultaneous_at_sun": 0,
+          "maximum_simultaneous": 2,
+          "score": 18
+        },
+        {
+          "sample": 500,
+          "utc": "2026-08-21T14:20:00Z",
+          "altitude_deg": 70.73829975583058,
+          "azimuth_deg": 5.026376218779738,
+          "passages": 15,
+          "simultaneous_at_sun": 0,
+          "maximum_simultaneous": 2,
+          "score": 19
+        },
+        {
+          "sample": 505,
+          "utc": "2026-08-21T14:25:00Z",
+          "altitude_deg": 70.80813034736302,
+          "azimuth_deg": 1.3178279775979374,
+          "passages": 14,
+          "simultaneous_at_sun": 0,
+          "maximum_simultaneous": 2,
+          "score": 18
+        },
+        {
+          "sample": 510,
+          "utc": "2026-08-21T14:30:00Z",
+          "altitude_deg": 70.79754727098702,
+          "azimuth_deg": 357.5978298136106,
+          "passages": 14,
+          "simultaneous_at_sun": 0,
+          "maximum_simultaneous": 2,
+          "score": 18
+        },
+        {
+          "sample": 515,
+          "utc": "2026-08-21T14:35:00Z",
+          "altitude_deg": 70.70668237942412,
+          "azimuth_deg": 353.89736107899455,
+          "passages": 14,
+          "simultaneous_at_sun": 0,
+          "maximum_simultaneous": 2,
+          "score": 18
+        },
+        {
+          "sample": 520,
+          "utc": "2026-08-21T14:40:00Z",
+          "altitude_deg": 70.5366597029111,
+          "azimuth_deg": 350.2464377011689,
+          "passages": 14,
+          "simultaneous_at_sun": 0,
+          "maximum_simultaneous": 2,
+          "score": 18
+        },
+        {
+          "sample": 525,
+          "utc": "2026-08-21T14:45:00Z",
+          "altitude_deg": 70.28952740047147,
+          "azimuth_deg": 346.67269892025,
+          "passages": 14,
+          "simultaneous_at_sun": 0,
+          "maximum_simultaneous": 2,
+          "score": 18
+        },
+        {
+          "sample": 530,
+          "utc": "2026-08-21T14:50:00Z",
+          "altitude_deg": 69.96813912594733,
+          "azimuth_deg": 343.20026949994354,
+          "passages": 14,
+          "simultaneous_at_sun": 0,
+          "maximum_simultaneous": 2,
+          "score": 18
+        },
+        {
+          "sample": 535,
+          "utc": "2026-08-21T14:55:00Z",
+          "altitude_deg": 69.57600011301312,
+          "azimuth_deg": 339.8489995179199,
+          "passages": 12,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 20
+        },
+        {
+          "sample": 540,
+          "utc": "2026-08-21T15:00:00Z",
+          "altitude_deg": 69.11709588423635,
+          "azimuth_deg": 336.6341130054488,
+          "passages": 12,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 20
+        },
+        {
+          "sample": 545,
+          "utc": "2026-08-21T15:05:00Z",
+          "altitude_deg": 68.5957206732032,
+          "azimuth_deg": 333.56623203063526,
+          "passages": 13,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 21
+        },
+        {
+          "sample": 550,
+          "utc": "2026-08-21T15:10:00Z",
+          "altitude_deg": 68.0163192812889,
+          "azimuth_deg": 330.65169823101354,
+          "passages": 13,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 21
+        },
+        {
+          "sample": 555,
+          "utc": "2026-08-21T15:15:00Z",
+          "altitude_deg": 67.38335146551725,
+          "azimuth_deg": 327.89309407574456,
+          "passages": 11,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 19
+        },
+        {
+          "sample": 560,
+          "utc": "2026-08-21T15:20:00Z",
+          "altitude_deg": 66.7011832908184,
+          "azimuth_deg": 325.2898680782059,
+          "passages": 10,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 18
+        },
+        {
+          "sample": 565,
+          "utc": "2026-08-21T15:25:00Z",
+          "altitude_deg": 65.97400601190057,
+          "azimuth_deg": 322.8389842958182,
+          "passages": 10,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 18
+        },
+        {
+          "sample": 570,
+          "utc": "2026-08-21T15:30:00Z",
+          "altitude_deg": 65.20578034757096,
+          "azimuth_deg": 320.535538709917,
+          "passages": 11,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 19
+        },
+        {
+          "sample": 575,
+          "utc": "2026-08-21T15:35:00Z",
+          "altitude_deg": 64.40020247306093,
+          "azimuth_deg": 318.37330726240555,
+          "passages": 13,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 21
+        },
+        {
+          "sample": 580,
+          "utc": "2026-08-21T15:40:00Z",
+          "altitude_deg": 63.560687467762804,
+          "azimuth_deg": 316.3452088227154,
+          "passages": 12,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 20
+        },
+        {
+          "sample": 585,
+          "utc": "2026-08-21T15:45:00Z",
+          "altitude_deg": 62.690366025412736,
+          "azimuth_deg": 314.44367982435347,
+          "passages": 12,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 20
+        },
+        {
+          "sample": 590,
+          "utc": "2026-08-21T15:50:00Z",
+          "altitude_deg": 61.79209068803582,
+          "azimuth_deg": 312.66096590901356,
+          "passages": 12,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 20
+        },
+        {
+          "sample": 595,
+          "utc": "2026-08-21T15:55:00Z",
+          "altitude_deg": 60.86844849171489,
+          "azimuth_deg": 310.98934056031305,
+          "passages": 12,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 20
+        },
+        {
+          "sample": 600,
+          "utc": "2026-08-21T16:00:00Z",
+          "altitude_deg": 59.92177756910284,
+          "azimuth_deg": 309.4212625172601,
+          "passages": 12,
+          "simultaneous_at_sun": 1,
+          "maximum_simultaneous": 2,
+          "score": 20
+        }
+      ]
+    }
+  },
+  "grid": {
+    "matrix_shape": [
+      768,
+      1440
+    ],
+    "dimension_order": [
+      "frequency",
+      "time"
+    ],
+    "frequency": {
+      "array": "frequencies_hz",
+      "dtype": "float64",
+      "unit": "Hz",
+      "placement": "uniform channel centers; band limits are channel edges",
+      "band_min_hz": 1150000000.0,
+      "band_max_hz": 1600000000.0,
+      "channel_count": 768,
+      "channel_width_hz": 585937.5,
+      "first_center_hz": 1150292968.75,
+      "last_center_hz": 1599707031.25
+    },
+    "time": {
+      "array": "time_offsets_seconds",
+      "dtype": "int64",
+      "unit": "seconds since start_utc",
+      "start_utc": "2026-08-21T06:00:00Z",
+      "end_utc_exclusive": "2026-08-22T06:00:00Z",
+      "step_seconds": 60,
+      "sample_count": 1440,
+      "last_sample_utc": "2026-08-22T05:59:00Z"
+    },
+    "power": {
+      "dtype": "float32",
+      "unit": "relative linear power (not dBm/W)",
+      "combination": "sum in linear power; dB only for display"
+    }
+  },
+  "dependency_versions": {
+    "python": "3.12.14",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "skyfield": "1.55",
+    "sgp4": "2.27",
+    "astropy": "8.0.2",
+    "matplotlib": "3.10.8",
+    "gnssvis": "0.1.0"
+  },
+  "models": {
+    "orbit": "SGP4, WGS84, unrefracted topocentric geometry",
+    "emission": "channel-integrated sinc\u00b2 BPSK proxy with radial Doppler; L1/L2 mixture, L5 broad; no actual composite waveform",
+    "beam": {
+      "model": "chromatic_elliptical_gaussian",
+      "full_width_deg": 50.0,
+      "inside_rule": "gain_at_reference_frequency >= 0.5",
+      "minimum_altitude_deg": 0.0,
+      "refraction": "none",
+      "selection_note": "Elliptical half-power contour at reference frequency; full Gaussian tails synthesized above horizon.",
+      "minor_width_deg": 40.0,
+      "reference_frequency_hz": 1575420000.0,
+      "position_angle_deg": 0
+    },
+    "solar": {
+      "ephemeris_file": "data/ephemeris/de421.bsp",
+      "allow_download": true,
+      "quiet_power_relative": 5.0,
+      "quiet_received_spectral_index": 0.0,
+      "active_power_relative": 0.0,
+      "electron_energy_index": 3.0,
+      "note": "Default quiet thermal Sun, flat relative received continuum proxy. Optional active continuum uses optically thin synchrotron slope -(p-1)/2; no real solar event or measured flux is claimed. Solar disk treated as unresolved versus 40-50 degree beam."
+    },
+    "not_modelled": [
+      "measured EIRP/solar flux",
+      "polarization",
+      "multipath",
+      "ionosphere",
+      "scattering",
+      "receiver bandpass",
+      "solar bursts",
+      "satellite health/status"
+    ]
+  },
+  "reference_hashes_sha256": {
+    "satellites.tle": "b219c452001fa624e5cd80685f36e4a25247cdc36fb8afec73b25213a41d8eae",
+    "satellites.csv": "03d7d486d2ce4dca5fb8fab901608de8eda351bbc9f7a2c44f98f6de28f8434a",
+    "signals.csv": "e44d910be08df6585698f20eed7640b1d130a0a86f59b930643a8cd24af68075"
+  },
+  "array_sha256": {
+    "noise_power": "988b07d6a788523ed74c885433e4ac112755ed3c05b0625e86294afa93173eaa",
+    "satellite_power": "a1f75942ebfed752962bd2e7b66cd1b869950c09ac7e43fbade7c5109e6b3b18",
+    "solar_power": "ae4e6da5b9870a5fd31045bd6f58b8543a24ae9877311ac7fe207a099b15090d",
+    "total_power": "ca72e304492fb592643044c14ef5230a0c68329b1759b0804e5a2a2fc3031c24",
+    "frequencies_hz": "68498303bf4277804adfe327aaec97d6e47d96ed8c8eb7a274efff8f3b155112",
+    "time_offsets_seconds": "32c44f5e698a788ccba4177276b8c3640ea696bdd47bffdffe0b7625b6d970c3"
+  },
+  "ephemeris_sha256": "a20a7139da04cbc462454634918e9a9ca69127044e2cc9d4f9c16e238d2deedc",
+  "counts": {
+    "satellites": 32,
+    "passages": 17,
+    "satellites_entering_half_power_beam": 16,
+    "maximum_simultaneous_half_power": 3,
+    "maximum_simultaneous_above_horizon": 15
+  },
+  "solar_peak_utc": "2026-08-21T12:15:00Z",
+  "solar_min_separation_deg": 0.0,
+  "l1_doppler_range_hz_visible": [
+    -3483.2734847474203,
+    3767.409245856625
+  ],
+  "sampling": {
+    "step_seconds": 60,
+    "channel_width_hz": 585937.5,
+    "shape_frequency_time": [
+      768,
+      1440
+    ],
+    "note": "Doppler is unresolved in the wideband image; see separate kHz plot. Powers are sample-time channel means, not a voltage/FFT simulation."
+  },
+  "satellites": [
+    {
+      "norad_id": 26407,
+      "name": "GPS BIIR-5  (PRN 22)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-21T20:41:22.754669Z",
+      "max_epoch_offset_hours": 14.689654074722222
+    },
+    {
+      "norad_id": 27663,
+      "name": "GPS BIIR-8  (PRN 16)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-21T22:24:32.868896Z",
+      "max_epoch_offset_hours": 16.40913024888889
+    },
+    {
+      "norad_id": 28190,
+      "name": "GPS BIIR-11 (PRN 19)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-20T17:00:28.814087Z",
+      "max_epoch_offset_hours": 36.99199608694444
+    },
+    {
+      "norad_id": 28474,
+      "name": "GPS BIIR-13 (PRN 02)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-22T02:40:34.502869Z",
+      "max_epoch_offset_hours": 20.676250796944444
+    },
+    {
+      "norad_id": 28874,
+      "name": "GPS BIIRM-1 (PRN 17)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-22T04:14:58.433289Z",
+      "max_epoch_offset_hours": 22.249564802499997
+    },
+    {
+      "norad_id": 29486,
+      "name": "GPS BIIRM-2 (PRN 31)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-22T01:11:12.262268Z",
+      "max_epoch_offset_hours": 19.186739518888892
+    },
+    {
+      "norad_id": 29601,
+      "name": "GPS BIIRM-3 (PRN 12)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-20T17:39:57.946167Z",
+      "max_epoch_offset_hours": 36.3339038425
+    },
+    {
+      "norad_id": 32260,
+      "name": "GPS BIIRM-4 (PRN 15)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-22T12:56:10.046692Z",
+      "max_epoch_offset_hours": 30.936124081111114
+    },
+    {
+      "norad_id": 32384,
+      "name": "GPS BIIRM-5 (PRN 29)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-22T14:26:18.170013Z",
+      "max_epoch_offset_hours": 32.43838055916667
+    },
+    {
+      "norad_id": 32711,
+      "name": "GPS BIIRM-6 (PRN 07)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-21T10:47:46.925934Z",
+      "max_epoch_offset_hours": 19.203631685
+    },
+    {
+      "norad_id": 35752,
+      "name": "GPS BIIRM-8 (PRN 05)",
+      "block": "IIR",
+      "tle_epoch_utc": "2026-08-22T10:47:40.621338Z",
+      "max_epoch_offset_hours": 28.79461703833333
+    },
+    {
+      "norad_id": 36585,
+      "name": "GPS BIIF-1  (PRN 25)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-20T16:30:00Z",
+      "max_epoch_offset_hours": 37.5
+    },
+    {
+      "norad_id": 38833,
+      "name": "GPS BIIF-3  (PRN 24)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-21T03:07:26.379547Z",
+      "max_epoch_offset_hours": 26.87600568138889
+    },
+    {
+      "norad_id": 39166,
+      "name": "GPS BIIF-4  (PRN 27)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-20T11:59:46.842987Z",
+      "max_epoch_offset_hours": 42.00365472583333
+    },
+    {
+      "norad_id": 39533,
+      "name": "GPS BIIF-5  (PRN 30)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-20T12:02:26.871338Z",
+      "max_epoch_offset_hours": 41.95920240611111
+    },
+    {
+      "norad_id": 39741,
+      "name": "GPS BIIF-6  (PRN 06)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-21T06:40:04.581116Z",
+      "max_epoch_offset_hours": 23.332060801111112
+    },
+    {
+      "norad_id": 40105,
+      "name": "GPS BIIF-7  (PRN 09)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-20T20:52:45.399384Z",
+      "max_epoch_offset_hours": 33.12072239333333
+    },
+    {
+      "norad_id": 40294,
+      "name": "GPS BIIF-8  (PRN 03)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-21T05:43:18.195465Z",
+      "max_epoch_offset_hours": 24.2782790375
+    },
+    {
+      "norad_id": 40534,
+      "name": "GPS BIIF-9  (PRN 26)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-21T20:59:14.622742Z",
+      "max_epoch_offset_hours": 14.987395206111112
+    },
+    {
+      "norad_id": 40730,
+      "name": "GPS BIIF-10 (PRN 08)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-22T00:52:08.957855Z",
+      "max_epoch_offset_hours": 18.869154959722223
+    },
+    {
+      "norad_id": 41019,
+      "name": "GPS BIIF-11 (PRN 10)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-22T14:06:13.355713Z",
+      "max_epoch_offset_hours": 32.10370992027778
+    },
+    {
+      "norad_id": 41328,
+      "name": "GPS BIIF-12 (PRN 32)",
+      "block": "IIF",
+      "tle_epoch_utc": "2026-08-20T16:23:36.930054Z",
+      "max_epoch_offset_hours": 37.60640831833334
+    },
+    {
+      "norad_id": 43873,
+      "name": "GPS BIII-1  (PRN 04)",
+      "block": "III",
+      "tle_epoch_utc": "2026-08-22T01:37:32.329071Z",
+      "max_epoch_offset_hours": 19.625646964166666
+    },
+    {
+      "norad_id": 44506,
+      "name": "GPS BIII-2  (PRN 18)",
+      "block": "III",
+      "tle_epoch_utc": "2026-08-21T16:46:31.521210Z",
+      "max_epoch_offset_hours": 13.224577441666668
+    },
+    {
+      "norad_id": 45854,
+      "name": "GPS BIII-3  (PRN 23)",
+      "block": "III",
+      "tle_epoch_utc": "2026-08-21T18:57:43.024292Z",
+      "max_epoch_offset_hours": 12.961951192222223
+    },
+    {
+      "norad_id": 46826,
+      "name": "GPS BIII-4  (PRN 14)",
+      "block": "III",
+      "tle_epoch_utc": "2026-08-22T07:50:19.294922Z",
+      "max_epoch_offset_hours": 25.838693033888887
+    },
+    {
+      "norad_id": 48859,
+      "name": "GPS BIII-5  (PRN 11)",
+      "block": "III",
+      "tle_epoch_utc": "2026-08-20T08:05:37.587830Z",
+      "max_epoch_offset_hours": 45.90622560277777
+    },
+    {
+      "norad_id": 55268,
+      "name": "GPS BIII-6  (PRN 28)",
+      "block": "III",
+      "tle_epoch_utc": "2026-08-20T12:27:20.488037Z",
+      "max_epoch_offset_hours": 41.54430887861111
+    },
+    {
+      "norad_id": 62339,
+      "name": "GPS BIII-7  (PRN 01)",
+      "block": "III",
+      "tle_epoch_utc": "2026-08-19T14:35:44.592834Z",
+      "max_epoch_offset_hours": 63.40427976833333
+    },
+    {
+      "norad_id": 64202,
+      "name": "GPS BIII-8  (PRN 21)",
+      "block": "III",
+      "tle_epoch_utc": "2026-08-22T09:26:10.104004Z",
+      "max_epoch_offset_hours": 27.43614000111111
+    },
+    {
+      "norad_id": 67588,
+      "name": "GPS BIII-9  (PRN 20)",
+      "block": "III",
+      "tle_epoch_utc": "2026-08-21T12:13:03.654907Z",
+      "max_epoch_offset_hours": 17.78231808138889
+    },
+    {
+      "norad_id": 68791,
+      "name": "GPS BIII-10 (PRN 13)",
+      "block": "III",
+      "tle_epoch_utc": "2026-08-21T05:29:38.002838Z",
+      "max_epoch_offset_hours": 24.50611032277778
+    }
+  ],
+  "checks": {
+    "finite_positive_total": true,
+    "geometry_and_emission_half_power_masks_agree": true,
+    "linear_component_sum": true,
+    "power_float32": true,
+    "solar_transit_inside_beam": true,
+    "satellite_power_nonnegative": true,
+    "no_satellite_power_when_all_below_horizon": true
+  },
+  "display": {
+    "formula": "10 log10(P / P0)",
+    "unit": "relative dB, not dBm",
+    "common_limits_db": [
+      -2,
+      20
+    ]
+  },
+  "passage_definition": "Elliptical half-power contour at reference frequency, above horizon; emission continues in Gaussian wings."
+}

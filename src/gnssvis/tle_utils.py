@@ -10,7 +10,58 @@ Provides functions for managing the TLE repository, including:
 from pathlib import Path
 from datetime import datetime, timedelta
 import shutil
-from typing import Optional
+from typing import List, Optional, Tuple
+
+
+def tle_line_checksum(line: str) -> int:
+    """Return the modulo-10 checksum of the first 68 columns of a TLE line.
+
+    Digits count as their value, minus signs count as 1, everything else as 0.
+    """
+    total = 0
+    for char in line[:68]:
+        if char.isdigit():
+            total += int(char)
+        elif char == "-":
+            total += 1
+    return total % 10
+
+
+def parse_tle_text(text: str, validate_checksum: bool = True) -> List[Tuple[str, str, str]]:
+    """Parse name/line-1/line-2 TLE records from text.
+
+    Args:
+        text: TLE text in three-line (name, line 1, line 2) format.
+        validate_checksum: Raise ValueError when a line checksum is wrong.
+
+    Returns:
+        List of (name, line1, line2) tuples in file order. Names have their
+        surrounding whitespace stripped; element lines keep their columns.
+    """
+    lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
+    records: List[Tuple[str, str, str]] = []
+    i = 0
+    while i + 2 < len(lines):
+        name, line1, line2 = lines[i], lines[i + 1], lines[i + 2]
+        if line1.startswith("1 ") and line2.startswith("2 "):
+            if validate_checksum:
+                for line in (line1, line2):
+                    if len(line) != 69 or not line[68].isdigit():
+                        raise ValueError(f"Malformed TLE line for {name.strip()!r}: {line!r}")
+                    if tle_line_checksum(line) != int(line[68]):
+                        raise ValueError(f"TLE checksum mismatch for {name.strip()!r}: {line!r}")
+                if line1[2:7] != line2[2:7]:
+                    raise ValueError(f"TLE catalog numbers differ for {name.strip()!r}")
+            records.append((name.strip(), line1, line2))
+            i += 3
+        else:
+            i += 1
+    return records
+
+
+def read_tle_file(path, validate_checksum: bool = True) -> List[Tuple[str, str, str]]:
+    """Read and parse a local three-line TLE file without network access."""
+    return parse_tle_text(Path(path).read_text(encoding="utf-8"), validate_checksum)
 
 
 def get_tle_repository_path() -> Path:

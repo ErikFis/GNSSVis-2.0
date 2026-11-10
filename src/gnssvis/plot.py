@@ -9,6 +9,17 @@ Author: Erik H L Guimarães"""
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Distinct object colors used by the trajectory panel and the object table.
+COLORS_DISTINCT = [
+    '#1f77b4', '#ff7f0e', '#d62728', '#9467bd', '#8c564b', '#e377c2',
+    '#7f7f7f', '#bcbd22', '#17becf', '#aec7e8', '#ffbb78', '#ff9896',
+    '#c5b0d5', '#c49c94', '#f7b6d2', '#c7c7c7', '#dbdb8d', '#9edae5',
+    '#393b79', '#637939', '#8c6d31', '#843c39', '#7b4173', '#5254a3',
+    '#6b6ecf', '#9c9ede', '#cedb9c', '#e7cb94', '#e7ba52', '#bd9e39',
+    '#ad494a', '#d6616b', '#e7969c', '#8ca252', '#b5cf6b', '#cedb9c',
+    '#31a354', '#756bb1', '#636363', '#969696', '#bdbdbd', '#d9d9d9'
+]
+
 
 class Visualizer:
     """Visualize radio astronomy data."""
@@ -46,15 +57,7 @@ class Visualizer:
 
         # Plot satellite trajectories
         if sky_objects:
-            colors_distinct = [
-                '#1f77b4', '#ff7f0e', '#d62728', '#9467bd', '#8c564b', '#e377c2', 
-                '#7f7f7f', '#bcbd22', '#17becf', '#aec7e8', '#ffbb78', '#ff9896',
-                '#c5b0d5', '#c49c94', '#f7b6d2', '#c7c7c7', '#dbdb8d', '#9edae5',
-                '#393b79', '#637939', '#8c6d31', '#843c39', '#7b4173', '#5254a3',
-                '#6b6ecf', '#9c9ede', '#cedb9c', '#e7cb94', '#e7ba52', '#bd9e39',
-                '#ad494a', '#d6616b', '#e7969c', '#8ca252', '#b5cf6b', '#cedb9c',
-                '#31a354', '#756bb1', '#636363', '#969696', '#bdbdbd', '#d9d9d9'
-            ]
+            colors_distinct = COLORS_DISTINCT
             telescope_dec = telescope_pointing.dec.deg if telescope_pointing else 0.0
             telescope_ra = telescope_pointing.ra.deg if telescope_pointing else 0.0
             
@@ -204,48 +207,8 @@ class Visualizer:
         ax_legend.axis('off')
         
         if legend_data:
-            # Create a table of satellites and colors
-            table_data = [['Satellite', 'Color']]
-            colors_for_table = [['white', 'white']]  # Header
-            
-            for name, color in legend_data:
-                # Truncate long names
-                display_name = name[:22] if len(name) > 22 else name
-                table_data.append([display_name, '●'])  # Colored symbol
-                colors_for_table.append(['white', color])
-            
-            # Create the table
-            table = ax_legend.table(
-                cellText=table_data,
-                cellLoc='left',
-                loc='center',
-                colWidths=[0.80, 0.20]
-            )
-            table.auto_set_font_size(False)
-            table.set_fontsize(11)
-            table.scale(1, 2.8)
-            
-            # Set cell colors
-            for i, (row_data, row_colors) in enumerate(zip(table_data, colors_for_table)):
-                for j, (cell_text, cell_color) in enumerate(zip(row_data, row_colors)):
-                    cell = table[(i, j)]
-                    if i == 0:  # Header
-                        cell.set_facecolor('white')
-                        cell.set_text_props(weight='bold', color='black', fontsize=11)
-                        cell.set_edgecolor('gray')
-                        cell.set_linewidth(0.5)
-                    else:
-                        if j == 1:  # Color column
-                            cell.set_facecolor(cell_color)
-                            cell.set_text_props(color=cell_color, weight='bold', fontsize=16)
-                            cell.set_edgecolor('gray')
-                            cell.set_linewidth(0.5)
-                        else:  # Name column
-                            cell.set_facecolor('white')
-                            cell.set_text_props(color='black', fontsize=10)
-                            cell.set_edgecolor('gray')
-                            cell.set_linewidth(0.5)
-            
+            self.draw_object_table(ax_legend, legend_data)
+
 #            ax_legend.text(0.5, -0.05, f'Total: {len(legend_data)} satellites', 
 #                          ha='center', va='top', fontsize=11, fontweight='bold',
 #                          transform=ax_legend.transAxes)
@@ -257,3 +220,59 @@ class Visualizer:
 #        plt.suptitle(f'GNSS analysis - {len(legend_data)} satellites detected', 
 #                     fontsize=13, fontweight='bold', y=0.98)
         plt.show()
+
+    @staticmethod
+    def draw_object_table(ax, legend_data, extra_columns=None, col_widths=None,
+                          fontsize: int = 11, row_scale: float = 2.8, name_width: int = 22,
+                          loc: str = 'center'):
+        """Draw the object/color table used beside the GNSSVis plots.
+
+        Args:
+            ax: Axes to draw on (typically with the axis turned off).
+            legend_data: Sequence of (name, color) pairs, one table row each.
+            extra_columns: Optional sequence of (header, values) appended after
+                the Color column; values has one string per legend row.
+            col_widths: Column widths as axes fractions (default [0.80, 0.20]).
+            fontsize: Header font size; body text uses fontsize - 1.
+            row_scale: Vertical scale factor for the rows.
+            name_width: Maximum displayed name length.
+            loc: Table position within the axes (matplotlib table ``loc``).
+
+        Returns:
+            The matplotlib Table.
+        """
+        extra_columns = list(extra_columns or [])
+        headers = ['Satellite', 'Color'] + [header for header, _ in extra_columns]
+        table_data = [headers]
+        colors_for_table = [['white'] * len(headers)]  # Header
+        for k, (name, color) in enumerate(legend_data):
+            # Truncate long names
+            display_name = name[:name_width] if len(name) > name_width else name
+            table_data.append([display_name, '●'] + [values[k] for _, values in extra_columns])
+            colors_for_table.append(['white', color] + ['white'] * len(extra_columns))
+
+        table = ax.table(
+            cellText=table_data,
+            cellLoc='left',
+            loc=loc,
+            colWidths=col_widths or [0.80, 0.20]
+        )
+        table.auto_set_font_size(False)
+        table.set_fontsize(fontsize)
+        table.scale(1, row_scale)
+
+        for i, row_colors in enumerate(colors_for_table):
+            for j, cell_color in enumerate(row_colors):
+                cell = table[(i, j)]
+                cell.set_edgecolor('gray')
+                cell.set_linewidth(0.5)
+                if i == 0:  # Header
+                    cell.set_facecolor('white')
+                    cell.set_text_props(weight='bold', color='black', fontsize=fontsize)
+                elif j == 1:  # Color column
+                    cell.set_facecolor(cell_color)
+                    cell.set_text_props(color=cell_color, weight='bold', fontsize=fontsize + 5)
+                else:  # Name and extra columns
+                    cell.set_facecolor('white')
+                    cell.set_text_props(color='black', fontsize=fontsize - 1)
+        return table
