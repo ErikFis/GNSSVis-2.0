@@ -43,6 +43,7 @@ caches/
 
 # Generated simulation outputs and local artifacts
 outputs/
+partial_results/
 results/
 artifacts/
 logs/

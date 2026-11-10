@@ -61,10 +61,33 @@ maintenance of scientific calculations and presentation.
 
 ## Independent simulation pipeline
 
-The future application will use a separate `gnssvis_simulation` namespace and
-explicitly reuse GNSSVis calculations. Its implementation is left for the
-programming task; this checkout does not contain the application yet. The
-frozen inputs and shared scenario specification are already included. See
-[the scenario guide](OBSERVATION_SCENARIO.md) and
-[first prompt](FIRST_PROMPT.md). Keep dependencies directed from the application
-to the library, without a circular dependency.
+The application lives in the separate `src/gnssvis_simulation` namespace and
+explicitly reuses GNSSVis calculations. Implemented so far:
+
+| Module | Responsibility |
+| --- | --- |
+| `config.py` | Load/validate the scenario JSON, derive frequency and time grids, resolve reference paths from the repository root, verify provenance hashes |
+| `geometry.py` | Offline `SkyAnalyzer` (local TLEs, SGP4, WGS84, bundled timescale), TLE epoch checks, alt/az/range/separation, beam masks, passages |
+| `noise.py` | `NoiseModel` interface (`generate(shape, rng) -> float32`) and `AveragedWhiteNoise`, Gamma(M, P0/M) with `default_rng(seed)` |
+| `emission.py` | Signal catalog and band selection, per-block `GaussianCarrierProfile`, Gaussian beam gain, masked per-satellite/carrier `Contribution`s summed in linear power |
+| `products.py` | Array contract checks, NPZ save/load (no pickle), JSON metadata, dependency versions, array hashes |
+| `diagnostics.py` | Noise statistics vs theory (z-scores, KS test), contribution intervals/peaks, text tables, ASCII passage timeline |
+| `figures.py` | Headless (Agg) geometry, noise waterfall/statistics and signal-only preview figures |
+| `partial.py` | `python -m gnssvis_simulation.partial`: terminal report and `partial_results/` |
+| `pipeline.py` | `total_power = noise_power + signal_power`, CSV tables, metadata, final figure, consistency checks |
+| `__main__.py` | `python -m gnssvis_simulation --config ... [--output ...]` (headless) |
+
+`figures.plot_final_waterfall` reuses `Visualizer.draw_object_table` and the
+GNSSVis colour list; the original `Visualizer.plot_waterfall_with_objects`
+output is unchanged. See [SIMULATION.md](SIMULATION.md) for the model and frozen inputs. Keep dependencies directed from the application to the library, without a circular dependency.
+
+## Optional wideband and solar pipeline
+
+`beam.py` supplies spherical offsets and the chromatic elliptical Gaussian
+response. `realistic.py` reuses scenario/geometry/noise modules, adds radial
+Doppler and channel-integrated spread-spectrum proxies, loads cached or
+online DE421 solar ephemerides and returns separate power components.
+`realistic_figures.py` renders five common-scale diagnostic/presentation figures.
+The public API lazily exposes `simulate_realistic`, `save_realistic` and
+`RealisticResult` without an ephemeris download at import. See
+[model, assumptions and reproduction](REALISTIC_SIMULATION.md).

@@ -6,13 +6,14 @@ TLEs, and an ATNF pulsar catalog cache. Coordinates vary with time.
 Author: Erik H L Guimaraes"""
 
 from __future__ import annotations
-from typing import Dict
+from pathlib import Path
+from typing import Dict, Iterable, List, Optional, Union
 import warnings
 import numpy as np
 import astropy.units as u
 from astropy.time import Time
 from astropy.coordinates import SkyCoord, EarthLocation, CartesianRepresentation
-from skyfield.api import EarthSatellite, Topos
+from skyfield.api import EarthSatellite, Topos, wgs84
 # from psrqpy import QueryATNF  # Temporarily disabled
 
 warnings.filterwarnings("ignore", message="you can only subtract two vectors")
@@ -21,14 +22,52 @@ warnings.filterwarnings("ignore", message="you can only subtract two vectors")
 class SkyAnalyzer:
     """Calculate ephemerides and find objects in the field of view."""
 
-    def __init__(self, lat_deg: float = -7.211637, lon_deg: float = -35.908138, elev_m: float = 553.0) -> None:
-        """Initialize the observatory and load planetary ephemerides."""
-        from pathlib import Path
+    def __init__(self, lat_deg: float = -7.211637, lon_deg: float = -35.908138, elev_m: float = 553.0,
+                 *, offline: bool = False,
+                 tle_file: Optional[Union[str, Path]] = None) -> None:
+        """Initialize the observatory and load planetary ephemerides.
+
+        Args:
+            lat_deg: Geodetic latitude in degrees (negative south).
+            lon_deg: Geodetic longitude in degrees (east positive).
+            elev_m: Height above the WGS84 ellipsoid in meters.
+            offline: If True, never access the network or write caches: use
+                Skyfield's bundled timescale data and do not load DE421.
+                Solar system objects are then unavailable; GNSS geometry
+                only needs SGP4 and the observer position.
+            tle_file: Optional local three-line TLE file. When given, GNSS
+                trajectories are propagated from it instead of Celestrak.
+        """
         from skyfield.api import Loader
-        
+
         self.lat_deg: float = lat_deg
         self.lon_deg: float = lon_deg
         self.elev_m: float = elev_m
+        self.offline: bool = bool(offline)
+        self.tle_file: Optional[Path] = Path(tle_file) if tle_file is not None else None
+
+        # Geocentric WGS84 observer used for topocentric satellite vectors.
+        # It does not require a planetary ephemeris.
+        self.topos = wgs84.latlon(self.lat_deg, self.lon_deg, elevation_m=self.elev_m)
+
+        # Astropy: location for AltAz transformations
+        self.location = EarthLocation(lat=self.lat_deg * u.deg,
+                                      lon=self.lon_deg * u.deg,
+                                      height=self.elev_m * u.m)
+
+        # Cache to avoid repeated downloads within a session
+        self._pulsar_cache = None
+        self._gnss_satellites_cache = None
+
+        if self.offline:
+            # Bundled Delta T / UT1 / leap-second tables only: no file I/O.
+            from skyfield.api import load as _skyfield_load
+            self.loader = None
+            self.ts = _skyfield_load.timescale(builtin=True)
+            self.planets = None
+            self.earth = None
+            self.observatory = None
+            return
 
         # Set a central directory for astronomical data
         project_root = Path(__file__).parent.parent.parent
@@ -51,14 +90,6 @@ class SkyAnalyzer:
                                               longitude_degrees=self.lon_deg,
                                               elevation_m=self.elev_m)
 
-        # Astropy: location for AltAz transformations
-        self.location = EarthLocation(lat=self.lat_deg * u.deg,
-                                      lon=self.lon_deg * u.deg,
-                                      height=self.elev_m * u.m)
-        
-        # Cache to avoid repeated downloads within a session
-        self._pulsar_cache = None
-        self._gnss_satellites_cache = None
 
     def clear_cache(self) -> None:
         """Clear in-memory catalog caches to allow new downloads."""
@@ -85,6 +116,10 @@ class SkyAnalyzer:
     # ----------------------------------------------------------------------
     def get_solar_system_objects(self, times: Time) -> Dict[str, SkyCoord]:
         """Return RA/Dec trajectories of the main planets and the Sun."""
+        if self.planets is None:
+            warnings.warn("Solar system objects need the DE421 ephemeris, which is "
+                          "not loaded in offline mode; returning no objects.")
+            return {}
         times = self._ensure_time(times)
         sky_times = self._to_skyfield_time(times)
 
@@ -111,6 +146,7 @@ class SkyAnalyzer:
         self,
         times: Time,
         tle_url: str = "https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle",
+        tle_file: Optional[Union[str, Path]] = None,
     ) -> Dict[str, SkyCoord]:
         """Calculate GNSS trajectories with Skyfield SGP4 propagation.
         
@@ -119,26 +155,46 @@ class SkyAnalyzer:
         cache avoids repeated downloads during one run. Local files older than
         seven days require an update.
         
+        If ``tle_file`` (or the ``tle_file`` given to the constructor) is set,
+        propagate those local elements instead, without network access or
+        cache writes. In offline mode without a local file, only an existing
+        repository file is used and nothing is downloaded.
+
         Args:
             times: Observation timestamps as astropy.Time.
             tle_url: Celestrak API URL for GNSS TLEs.
+            tle_file: Optional local three-line TLE file.
         
         Returns:
             Dictionary mapping satellite names to SkyCoord positions at each time."""
-        import requests
         from datetime import datetime
-        from pathlib import Path
         import shutil
 
         times = self._ensure_time(times)
         sky_times = self._to_skyfield_time(times)
-        traj: Dict[str, SkyCoord] = {}
+
+        local_file = tle_file if tle_file is not None else self.tle_file
+        project_root = Path(__file__).parent.parent.parent
+        repo_file = project_root / "data" / "tle_repository" / "gnss" / "gnss.txt"
+        if local_file is None and self.offline:
+            if not repo_file.exists():
+                print("[WARN] Offline mode: no local GNSS TLE file available.")
+                return {}
+            local_file = repo_file
+
+        if local_file is not None:
+            try:
+                satellites = self.load_local_tles(local_file)
+            except Exception as exc:
+                print(f"[WARN] Failed to load local GNSS TLEs: {exc}")
+                return {}
+            print(f"[LOCAL TLE] {len(satellites)} satellites loaded from {Path(local_file).name}.")
+            return self._topocentric_skycoords(satellites, sky_times, times)
 
         # TLE repository paths
-        project_root = Path(__file__).parent.parent.parent
-        tle_repo = project_root / "data" / "tle_repository" / "gnss"
+        tle_repo = repo_file.parent
         tle_repo.mkdir(parents=True, exist_ok=True)
-        tle_file = tle_repo / "gnss.txt"
+        tle_file = repo_file
 
         # Check whether the local file is still fresh
         needs_update = True
@@ -160,7 +216,14 @@ class SkyAnalyzer:
             if self._gnss_satellites_cache is not None and not needs_update:
                 print("[CACHE] Using GNSS TLEs from the current session cache.")
                 satellites = self._gnss_satellites_cache
+            elif not needs_update:
+                # A fresh repository file exists: reuse it instead of downloading.
+                satellites = self.load_local_tles(tle_file, validate_checksum=False)
+                self._gnss_satellites_cache = satellites
+                print(f"[REPOSITORY] {len(satellites)} GNSS satellites loaded from {tle_file.name}.")
             else:
+                import requests
+
                 # Download with requests from the Celestrak API (gp.php)
                 print(f"[DOWNLOAD] Downloading GNSS TLEs from: {tle_url}")
                 response = requests.get(tle_url, timeout=30)
@@ -202,21 +265,81 @@ class SkyAnalyzer:
             print("[WARN] No GNSS satellites available.")
             return {}
 
-        # Geocentric observer
-        observer = self.earth + Topos(
-            latitude_degrees=self.lat_deg,
-            longitude_degrees=self.lon_deg,
-            elevation_m=self.elev_m,
-        )
+        return self._topocentric_skycoords(satellites, sky_times, times)
 
+    # ----------------------------------------------------------------------
+    def load_local_tles(self, tle_file: Union[str, Path],
+                        norad_ids: Optional[Iterable[int]] = None,
+                        validate_checksum: bool = True) -> List[EarthSatellite]:
+        """Load EarthSatellite objects from a local TLE file (no network).
+
+        Args:
+            tle_file: Three-line TLE file (name, line 1, line 2).
+            norad_ids: Optional NORAD IDs to select; the result follows this
+                order and a missing or duplicated ID raises ValueError.
+            validate_checksum: Verify line checksums and catalog numbers.
+
+        Returns:
+            List of Skyfield EarthSatellite objects bound to this timescale.
+        """
+        from .tle_utils import read_tle_file
+
+        records = read_tle_file(tle_file, validate_checksum=validate_checksum)
+        satellites = [EarthSatellite(l1, l2, name, self.ts) for name, l1, l2 in records]
+        if norad_ids is None:
+            return satellites
+        by_id: Dict[int, EarthSatellite] = {}
+        for sat in satellites:
+            if sat.model.satnum in by_id:
+                raise ValueError(f"Duplicate NORAD ID {sat.model.satnum} in {tle_file}")
+            by_id[sat.model.satnum] = sat
+        missing = [int(n) for n in norad_ids if int(n) not in by_id]
+        if missing:
+            raise ValueError(f"NORAD IDs not found in {tle_file}: {missing}")
+        return [by_id[int(n)] for n in norad_ids]
+
+    def satellite_altaz(self, satellite: EarthSatellite, times) -> Dict[str, np.ndarray]:
+        """Unrefracted topocentric altitude, azimuth and range of a satellite.
+
+        Use SGP4 propagation and the WGS84 observer, without a planetary
+        ephemeris or atmospheric refraction.
+
+        Args:
+            satellite: Skyfield EarthSatellite.
+            times: astropy.Time, ISO strings, or a Skyfield Time.
+
+        Returns:
+            Dictionary with ``alt_deg``, ``az_deg`` (east of north) and
+            ``range_m`` arrays, one value per timestamp.
+
+        Raises:
+            ValueError: If SGP4 reports an error or a non-finite position.
+        """
+        sky_times = times if hasattr(times, "tt") and hasattr(times, "ts") else \
+            self._to_skyfield_time(self._ensure_time(times))
+        topocentric = (satellite - self.topos).at(sky_times)
+        position = topocentric.position.m
+        if not np.all(np.isfinite(position)):
+            message = getattr(topocentric, "message", "non-finite position")
+            raise ValueError(f"SGP4 failed for {satellite.name}: {message}")
+        alt, az, distance = topocentric.altaz()
+        # Positive radial velocity means recession (negative received Doppler).
+        range_rate = np.sum(position * topocentric.velocity.m_per_s, axis=0) / distance.m
+        return {
+            "alt_deg": np.atleast_1d(alt.degrees),
+            "az_deg": np.atleast_1d(az.degrees),
+            "range_m": np.atleast_1d(distance.m),
+            "range_rate_m_s": np.atleast_1d(range_rate),
+        }
+
+    def _topocentric_skycoords(self, satellites, sky_times, times: Time) -> Dict[str, SkyCoord]:
+        """Topocentric RA/Dec SkyCoords (legacy GNSSVis trajectory format)."""
+        traj: Dict[str, SkyCoord] = {}
         for sat in satellites:
             try:
-                sat_geocentric = sat.at(sky_times).position.au
-                earth_pos = self.earth.at(sky_times).position.au
-                obs_pos_geocentric = observer.at(sky_times).position.au - earth_pos
-
-                # Topocentric vector (satellite minus geocentric observer)
-                topocentric_km = (sat_geocentric - obs_pos_geocentric) * 149_597_870.7
+                # Satellite minus geocentric observer, in GCRS. Equivalent to
+                # the former DE421-based difference, in which Earth cancels.
+                topocentric_km = (sat - self.topos).at(sky_times).position.km
 
                 cart_rep = CartesianRepresentation(
                     x=topocentric_km[0] * u.km,

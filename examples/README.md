@@ -30,4 +30,4 @@ smoothed = gv.gaussian_smooth(detrended, sigma_freq=2.0, sigma_time=2.0)
 
 Generated FITS files, plots, and caches are ignored. Keep code, messages,
 comments, and documentation in English. The future simulation pipeline lives
-in a separate application namespace to be implemented during the task.
+in the separate gnssvis_simulation application namespace.
