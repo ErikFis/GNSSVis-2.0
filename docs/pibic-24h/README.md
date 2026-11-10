@@ -10,7 +10,7 @@ O Sol quieto tem contínuo térmico ilustrativo; as amplitudes não são medidas
 
 ![Waterfall de 24 horas](01_waterfall_24h.png)
 
-## Componentes separados
+## GPS sem contribuição solar
 
 ![Componentes](02_componentes.png)
 
@@ -22,7 +22,7 @@ O Sol quieto tem contínuo térmico ilustrativo; as amplitudes não são medidas
 
 ![Modelos](04_modelos.png)
 
-## Comparação em grades e escalas iguais
+## Sol sem contribuição dos GPS
 
 ![Comparação](05_comparacao.png)
 
@@ -33,3 +33,5 @@ de consistência da simulação aprovados.
 
 O ZIP de dados omite apenas a matriz total redundante. `reconstruir_waterfall.py`
 recria o NPZ original por soma em float32, sem perda numérica.
+
+Gráficos no padrão GNSSVis: fundo branco, plasma, trajetórias acima e tabela de objetos à direita. O deslocamento vertical é de elevação para este apontamento alt/az fixo.

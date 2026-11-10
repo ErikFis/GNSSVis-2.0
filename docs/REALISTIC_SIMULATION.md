@@ -143,12 +143,9 @@ synthetic noise, not a time-integrated voltage/FFT receiver calculation.
   counts, spectral limits, assumptions and consistency checks.
 - `scenario.json`: exact configuration used.
 - Five PNGs: overview, components, L1/Doppler detail, spectral/beam models and
-  a common-grid comparison against the old fixed Gaussian emission proxy.
+  a Sun-only view.
 
-Plots use common limits −2 to 20 relative dB for readable comparison.
-The default total ranges approximately −6.44 to +16.93 dB: some low-power
-background pixels fall below the colour scale, while no high-power peaks are
-clipped. Generated arrays themselves are never clipped or smoothed.
+Plots use the GNSSVis white background, plasma colormap, upper trajectory panel and existing object-table helper. All waterfalls share the full finite range of the combined observation (approximately -6.44 to +16.93 relative dB). No values are clipped. The upper panel uses elevation offsets for the fixed alt/az pointing, or radial Doppler in the L1 detail. Separate satellite-only and Sun-only views show their corresponding objects.
 
 Tests cover Doppler sign, radial velocity against a finite range derivative,
 beam FWHM and chromatic scaling, angular wrapping, channel rebinning,

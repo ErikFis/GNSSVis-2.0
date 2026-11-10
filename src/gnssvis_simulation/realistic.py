@@ -422,7 +422,7 @@ def save_realistic(result: RealisticResult, output: Path):
             "display": {
                 "formula": "10 log10(P / P0)",
                 "unit": "relative dB, not dBm",
-                "common_limits_db": [-2, 20],
+                "common_limits_db": [float((10*np.log10(r.total_power/sc.config["noise"]["mean_power_relative"])).min()), float((10*np.log10(r.total_power/sc.config["noise"]["mean_power_relative"])).max())],
             },
             "passage_definition": "Elliptical half-power contour at reference frequency, above horizon; emission continues in Gaussian wings.",
         }

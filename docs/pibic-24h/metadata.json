@@ -1142,8 +1142,8 @@
     "formula": "10 log10(P / P0)",
     "unit": "relative dB, not dBm",
     "common_limits_db": [
-      -2,
-      20
+      -6.438141345977783,
+      16.9221248626709
     ]
   },
   "passage_definition": "Elliptical half-power contour at reference frequency, above horizon; emission continues in Gaussian wings."
