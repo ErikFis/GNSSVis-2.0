@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "tle": {
+    "original_provider": "CelesTrak GNSS group, as identified by the upstream GNSSVis downloader; not independently redownloaded for this pack.",
+    "provider_url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=gnss&FORMAT=tle",
+    "immediate_source_repository": "https://github.com/ErikFis/gnssvis",
+    "source_commit": "4b3f5b75e28dc5346e74544e47e9b1ecaf5c5c84",
+    "source_path": "data/tle_repository/gnss/gnss.txt",
+    "source_url": "https://github.com/ErikFis/gnssvis/blob/4b3f5b75e28dc5346e74544e47e9b1ecaf5c5c84/data/tle_repository/gnss/gnss.txt",
+    "source_blob_sha": "7ebfe51274df0be3e8738efa3bcad3055b720e2d",
+    "source_file_sha256": "0b0e942b68214a08eae603887985955d850272adee86f4f6abd8285d1e4d0ca2",
+    "original_download_time_utc": null,
+    "original_download_time_note": "Not recorded reliably in the upstream snapshot. Use the epoch encoded in each TLE, not a filename, commit date, or file modification time.",
+    "selection": "Six GPS Block IIF/III satellites for a small reproducible reference scenario.",
+    "transformations": [
+      "Preserve both 69-character element lines exactly.",
+      "Strip trailing spaces from display names.",
+      "Normalize record separators to LF.",
+      "Order records by the scenario norad_ids list."
+    ],
+    "satellite_count": 6,
+    "tle_checksums_verified": true
+  },
+  "frequency_sources": [
+    {
+      "id": "IS-GPS-200N-3.3.1.1",
+      "title": "IS-GPS-200N",
+      "document_date": "2022-08-01",
+      "section": "3.3.1.1 Frequency Plan",
+      "url": "https://www.gps.gov/sites/default/files/2025-07/IS-GPS-200N.pdf",
+      "document_sha256": "54ec544bfe7e6acd97daaa1de0ca248e5abec6b418f23c1a69991e5c7bcf749a",
+      "carriers_hz": {
+        "GPS_L1": 1575420000,
+        "GPS_L2": 1227600000
+      }
+    },
+    {
+      "id": "IS-GPS-705J-3.3.1.1",
+      "title": "IS-GPS-705J",
+      "document_date": "2022-08-01",
+      "section": "3.3.1.1 Frequency Plan",
+      "url": "https://www.gps.gov/sites/default/files/2025-07/IS-GPS-705J.pdf",
+      "document_sha256": "532fc3b89061dff84e34406b9a5b41e34b83bdc8cc194b7b7f75a70b15391885",
+      "carriers_hz": {
+        "GPS_L5": 1176450000
+      }
+    }
+  ],
+  "signal_assumptions": "Nominal carriers for the selected GPS IIF/III blocks. No assertion about individual satellite health, signal activation, received power, or measured interference.",
+  "files_sha256": {
+    "satellites.tle": "ec6c5eb4233429830548be07e4d164a188197e176c1b2048e28e0caff15e13ba",
+    "satellites.csv": "e7ca85c2fb5908ed0c4528ab858d57836e9177ec16736d1ceaad769fcbd7ab73",
+    "signals.csv": "3a1ae6f14749c95e68ad7298e8a4204da5f3be0db4ec68810745cc51e7f8fbcd"
+  }
+}

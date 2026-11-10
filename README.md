@@ -66,6 +66,10 @@ Latitude and longitude are degrees; altitude is meters above sea level.
 
 ## Documentation
 
+- [Shared offline observation scenario](docs/OBSERVATION_SCENARIO.md)
+- [Observation configuration](examples/scenarios/offline.json)
+- [Frozen TLE and frequency references](reference_data/README.md)
+- [Context for the first Taiga prompt](docs/FIRST_PROMPT.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Plotting guide](docs/PLOTTING_GUIDE.md)
 - [Public API](docs/SIMPLE_API.md)

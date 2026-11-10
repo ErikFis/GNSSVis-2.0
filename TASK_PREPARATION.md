@@ -1,52 +1,50 @@
 # Task preparation
 
-This is a clean local baseline derived from:
+## Starting point
 
-- Upstream: https://github.com/ErikFis/gnssvis
+This is a clean source baseline derived from:
+
+- Original upstream: https://github.com/ErikFis/gnssvis
 - Source commit: `4b3f5b75e28dc5346e74544e47e9b1ecaf5c5c84`
-- Local initial branch: `main`
-- Task comparison reference: `task-base`
+- Prepared public repository: https://github.com/ErikFis/GNSSVis-2.0
 
-The upstream repository and its history have not been modified. This checkout
-has a new local Git history so that downloaded datasets and caches are absent
-from both the files and the local history. The source license is preserved.
-The upstream URL is recorded here rather than configured as a push remote.
+The original repository has not been rewritten. The prepared repository has a
+fresh source history without the large original data objects. The source
+license is preserved. Preparation removed observation data, caches, bytecode,
+and installation artifacts, cleared notebook outputs, and used English prose
+and messages without changing the original numerical operations.
 
-## Preparation changes
+## Fixed task inputs
 
-- Exclude observation data, NumPy arrays, ephemerides, downloaded catalogs,
-  bytecode, installation metadata, and temporary artifacts.
-- Keep documentation in the data directory and clear all notebook outputs.
-- Use English documentation, comments, and runtime messages, without emojis.
-- Refresh outdated documentation examples to match the actual public API.
-- Preserve public API names, existing filenames, and astronomical aliases.
-- Preserve `pyproject.toml` as the authoritative dependency declaration.
-- Ignore local `requirements*.txt` files and requirements export directories.
-- Provide the separate sibling `gnssvis-simulation` repository for future work.
+The scenario in `examples/scenarios/offline.json` is the canonical source for
+observation parameters. `reference_data/` contains six real frozen GPS TLEs,
+a satellite catalog, nominal L1/L2/L5 carriers, and provenance with hashes.
+These small reference files are intentionally versioned rather than ignored.
 
-## Start the task
+Read `docs/OBSERVATION_SCENARIO.md` for the agreed conventions and
+`docs/FIRST_PROMPT.md` for context to supply at the start of the Taiga session.
+The scenario loader, offline GNSS-only integration, and simulation application
+are not implemented yet. They are the work to perform during the task.
 
-```bash
-git switch -c task/simulation-work
-```
+## Upload to Taiga
 
-## Files for task review
+Download the source ZIP of the prepared repository's main branch. GitHub source
+ZIPs exclude `.git`. Verify that the upload also excludes dependency folders,
+local environments, generated outputs, and caches. Keep `.gitignore`.
+Use Mount an archive with extraction destination `/workspace` before sending
+the first message. Do not run `git init` or `git clone` in that workspace.
 
-Keep source code, relevant examples, documentation, packaging metadata, and
-intentional test fixtures. Ignore local environments, bytecode, installation
-metadata, downloaded catalogs, ephemerides, observation datasets, generated
-simulation outputs, logs, temporary files, editor state, and build artifacts.
+Do not upload the older `gnssvis-task-ready.zip`: it was a local-checkout bundle
+containing `.git` directories. It is not the Taiga input archive.
 
-The ignore rules are based on file purpose. There is no file-size restriction,
-size-check script, or commit hook. Small fixtures under `tests/fixtures/` remain
-eligible for version control so reviewers can reproduce task behavior.
+## Review contents
 
-The provided repositories have local Git histories and `task-base` tags.
-Keep the repositories as siblings rather than nesting one inside the other.
+Keep source, meaningful tests, documentation, packaging metadata, and intentional
+reference fixtures. Ignore downloaded catalogs, planetary ephemerides, raw
+observations, generated output tables, logs, build artifacts, and environments.
+There is no size-check script, file-size restriction, or commit hook.
 
-## Dependencies and downloads
-
-Install this library with `python -m pip install -e .`. No requirements export
-is needed. The simulation scaffold uses its own `pyproject.toml` and has no
-runtime dependency on gnssvis. First use of sky analysis can download large
-ephemerides and orbital elements, which remain ignored.
+Dependencies remain declared in `pyproject.toml`; local requirements exports
+are ignored. Check package availability in the task environment's internal
+mirror. The existing default sky-analysis path can still download ephemerides
+and TLEs. Adding frozen inputs alone does not make those methods offline.

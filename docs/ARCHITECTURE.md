@@ -61,8 +61,10 @@ maintenance of scientific calculations and presentation.
 
 ## Independent simulation pipeline
 
-The sibling `gnssvis-simulation` repository is a separate Python distribution
-with its own Git history and `gnssvis_simulation` namespace. It does not import
-or modify the existing modules. Its pipeline implementation is intentionally
-left for the programming task. Any future integration should be explicit and
-optional rather than introducing a circular dependency.
+The future application will use a separate `gnssvis_simulation` namespace and
+explicitly reuse GNSSVis calculations. Its implementation is left for the
+programming task; this checkout does not contain the application yet. The
+frozen inputs and shared scenario specification are already included. See
+[the scenario guide](OBSERVATION_SCENARIO.md) and
+[first prompt](FIRST_PROMPT.md). Keep dependencies directed from the application
+to the library, without a circular dependency.

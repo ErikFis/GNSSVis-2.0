@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "scenario_id": "uirapuru_gps_zenith_20260822",
+  "purpose": "Historical reference scenario for developing an offline GNSSVis application; not a measured observation.",
+  "time_grid": {
+    "start_utc": "2026-08-22T00:00:00Z",
+    "duration_seconds": 21600,
+    "step_seconds": 60,
+    "interval": "left_closed_right_open",
+    "time_scale": "UTC"
+  },
+  "observatory": {
+    "name": "UIRAPURU reference site",
+    "latitude_deg": -7.211637,
+    "longitude_deg": -35.908138,
+    "elevation_m": 553.0,
+    "earth_model": "WGS84",
+    "elevation_convention": "Treat elevation_m as WGS84 ellipsoidal height for this reference simulation.",
+    "coordinate_source": "GNSSVis SkyAnalyzer defaults; not independently surveyed here."
+  },
+  "pointing": {
+    "mode": "fixed_altaz",
+    "azimuth_deg": 0.0,
+    "altitude_deg": 90.0,
+    "azimuth_convention": "degrees east of north; azimuth is immaterial at the zenith"
+  },
+  "beam": {
+    "model": "circular_top_hat",
+    "full_width_deg": 30.0,
+    "inside_rule": "angular_separation_deg <= full_width_deg / 2",
+    "minimum_altitude_deg": 0.0,
+    "refraction": "none"
+  },
+  "receiver": {
+    "band_min_hz": 1500000000,
+    "band_max_hz": 1600000000,
+    "frequency_rule": "band_min_hz <= carrier_hz <= band_max_hz",
+    "frequency_model": "nominal_carrier_center_only",
+    "doppler": "not_modelled",
+    "occupied_bandwidth": "not_modelled"
+  },
+  "references": {
+    "tle_file": "reference_data/satellites.tle",
+    "satellite_catalog_file": "reference_data/satellites.csv",
+    "signal_catalog_file": "reference_data/signals.csv",
+    "provenance_file": "reference_data/provenance.json",
+    "norad_ids": [
+      39166,
+      40294,
+      40534,
+      40730,
+      41328,
+      55268
+    ],
+    "max_absolute_tle_epoch_offset_hours": 72
+  },
+  "geometry": {
+    "position_kind": "topocentric",
+    "propagator": "SGP4",
+    "comparison_frame": "local unrefracted altitude/azimuth for both the pointing and satellite",
+    "timescale_data": "bundled package data only; no external Earth-orientation update",
+    "planetary_ephemeris_required": false,
+    "network_access_allowed": false
+  },
+  "passages": {
+    "definition": "maximal contiguous run of samples inside the beam and above the horizon",
+    "entry_time": "first included sample",
+    "exit_time_exclusive": "first following excluded sample, or the observation end when clipped",
+    "duration": "number_of_included_samples * step_seconds",
+    "subsample_interpolation": false,
+    "clipping_flags": [
+      "entry_clipped",
+      "exit_clipped"
+    ]
+  },
+  "randomness": {
+    "enabled": false,
+    "seed": null
+  },
+  "output": {
+    "default_directory": "outputs/offline",
+    "encoding": "UTF-8",
+    "csv_delimiter": ",",
+    "timestamp_format": "ISO 8601 UTC with Z suffix",
+    "samples_file": "samples.csv",
+    "passages_file": "passages.csv",
+    "metadata_file": "metadata.json",
+    "measured_observation_input_required": false,
+    "fits_output_required": false
+  },
+  "path_rules": {
+    "reference_paths": "relative to the repository root, not the caller working directory",
+    "output_directory": "default from this file; an explicit CLI output override is permitted"
+  }
+}

@@ -1,5 +1,7 @@
 # Documentation
 
+- [Observation scenario](OBSERVATION_SCENARIO.md): fixed parameters, offline inputs, and output contract.
+- [First prompt](FIRST_PROMPT.md): technical context to give the model at session start.
 - [Architecture](ARCHITECTURE.md): module responsibilities and data flow.
 - [Public API](SIMPLE_API.md): current classes, methods, and return values.
 - [Plotting](PLOTTING_GUIDE.md): synchronized waterfall and trajectory plots.

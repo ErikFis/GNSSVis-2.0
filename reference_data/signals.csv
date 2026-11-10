@@ -1,0 +1,4 @@
+signal_id,constellation,carrier_hz,applicable_blocks,source_id
+GPS_L1,GPS,1575420000,IIF|III,IS-GPS-200N-3.3.1.1
+GPS_L2,GPS,1227600000,IIF|III,IS-GPS-200N-3.3.1.1
+GPS_L5,GPS,1176450000,IIF|III,IS-GPS-705J-3.3.1.1

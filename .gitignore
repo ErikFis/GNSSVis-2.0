@@ -113,3 +113,11 @@ draft/figures/*.png
 # Keep intentional test fixtures available to reviewers
 !/tests/fixtures/
 !/tests/fixtures/**
+
+# Frozen reference inputs are intentional source assets; exclude everything else here
+/reference_data/**
+!/reference_data/README.md
+!/reference_data/satellites.tle
+!/reference_data/satellites.csv
+!/reference_data/signals.csv
+!/reference_data/provenance.json
