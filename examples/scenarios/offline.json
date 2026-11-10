@@ -167,5 +167,58 @@
     "intensity": "10*log10(total_power_relative/noise.mean_power_relative)",
     "intensity_label": "Relative power [dB re configured mean background]",
     "shared_geometry": "Use the same time grid and passage masks for synthesis and both panels."
+  },
+  "matrix_contract": {
+    "rank": 2,
+    "dimension_order": [
+      "frequency",
+      "time"
+    ],
+    "shape_rule": [
+      "frequency_grid.channel_count",
+      "time_grid.duration_seconds / time_grid.step_seconds"
+    ],
+    "validation": "Require positive grid sizes and duration_seconds to be an exact multiple of step_seconds.",
+    "row_axis": {
+      "index": "i = 0 .. channel_count-1",
+      "quantity": "frequency",
+      "coordinate_array": "frequencies_hz",
+      "storage_unit": "Hz",
+      "storage_dtype": "float64",
+      "formula": "band_min_hz + (i + 0.5) * (band_max_hz - band_min_hz) / channel_count",
+      "display_axis": "Y",
+      "display_unit": "MHz"
+    },
+    "column_axis": {
+      "index": "j = 0 .. duration_seconds/step_seconds-1",
+      "quantity": "time",
+      "coordinate_array": "time_offsets_seconds",
+      "storage_unit": "seconds since time_grid.start_utc",
+      "storage_dtype": "int64",
+      "formula": "j * step_seconds",
+      "absolute_timestamp": "time_grid.start_utc + time_offsets_seconds[j] seconds, interpreted in UTC",
+      "interval": "start included, observation end excluded",
+      "display_axis": "X",
+      "display_format": "UTC date and time"
+    },
+    "cell_values": {
+      "indexing": "power[i,j] is power in frequency channel i at time sample j",
+      "arrays": [
+        "noise_power",
+        "signal_power",
+        "total_power"
+      ],
+      "storage_unit": "relative linear power; same normalization for all three arrays",
+      "storage_dtype": "float32",
+      "combination": "total_power[i,j] = noise_power[i,j] + signal_power[i,j]",
+      "display_encoding": "color, not a third array dimension",
+      "display_formula": "10 * log10(total_power[i,j] / noise.mean_power_relative)",
+      "display_unit": "dB relative to configured mean background power",
+      "not_units": [
+        "dBm",
+        "watts",
+        "voltage"
+      ]
+    }
   }
 }

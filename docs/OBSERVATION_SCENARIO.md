@@ -45,6 +45,40 @@ consider a small backward-compatible adapter or extension for the new workflow.
 | Power-array shape | `(512, 2160)`, frequency then time |
 | Real FITS input | Not required; all simulation output is generated locally |
 
+## Matrix axes, values, and units
+
+The waterfall is a **two-dimensional matrix**, not a three-dimensional array.
+The two indices select frequency and time; the value in the cell is power,
+which becomes color in the plot. The structured specification is
+`matrix_contract` in the shared JSON.
+
+| Component | Stored format and unit | This scenario | Plot representation |
+| --- | --- | --- | --- |
+| Rows, index i | `frequencies_hz`, float64, Hz | 512 channel centers | Vertical Y axis, MHz |
+| Columns, index j | `time_offsets_seconds`, int64, seconds since UTC start | 2160 samples, 10 seconds apart | Horizontal X axis, UTC timestamps |
+| Cell `[i,j]` | noise/signal/total arrays, float32, relative linear power | Array shape `(512, 2160)` | Color, in dB relative to the configured mean background |
+
+Define the coordinates by:
+
+```
+df_hz = (band_max_hz - band_min_hz) / channel_count
+frequencies_hz[i] = band_min_hz + (i + 0.5) * df_hz
+time_offsets_seconds[j] = j * step_seconds
+timestamp_utc[j] = start_utc + time_offsets_seconds[j] seconds
+```
+
+For this configuration, `df_hz = 195312.5` Hz. The first and last channel centers
+are 1500097656.25 and 1599902343.75 Hz, respectively. The band limits are channel
+edges, not endpoint samples from a naive inclusive linspace. The first and last
+time offsets are 0 and 21590 seconds (00:00:00 and 05:59:50 UTC).
+
+Require positive grid sizes and exact duration/time-step divisibility. Frequency
+arrays index matrix rows; time arrays index columns. The geometry mask has one
+value per satellite per time sample and is broadcast over the spectral axis.
+Never transpose one component without its coordinates, or treat the power value
+as another array dimension. Sum in linear relative power; convert only the
+plotted total to `10*log10(total_power/P0)`. These are not calibrated watts or dBm.
+
 This historical scenario is near the actual epochs of the bundled real TLEs.
 Its site coordinates are inherited GNSSVis defaults, not newly surveyed values.
 The original TLE acquisition timestamp is unknown. Source URLs and hashes are

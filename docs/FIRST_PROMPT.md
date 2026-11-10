@@ -61,3 +61,12 @@ future extension points. The task environment has no general internet access;
 do not run `git init` or `git clone` there. Keep code, comments and documentation
 in English without emojis, leave generated outputs ignored, and report the
 checks you actually ran. Stop after the agreed result has been verified.
+
+## Matrix convention
+
+The `matrix_contract` section in the shared JSON defines rows, columns and cell
+values explicitly. Use `(frequency, time)` with shape `(512, 2160)` for this
+scenario. Store frequency centers in Hz, time offsets as integer seconds since
+the UTC start, and noise/signal/total cells in linear relative power. In the
+figure, display time on X, frequency in MHz on Y, and total power as a relative
+dB color scale. Do not interpret the color quantity as a third array dimension.
